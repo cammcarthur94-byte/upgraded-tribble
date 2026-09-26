@@ -1,0 +1,45 @@
+{
+  "name": "recomnd",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint",
+    "postinstall": "prisma generate"
+  },
+  "dependencies": {
+    "@anthropic-ai/sdk": "^0.125.0",
+    "@google/genai": "^2.22.0",
+    "@nivo/core": "^0.99.0",
+    "@nivo/radar": "^0.99.0",
+    "@prisma/client": "^5.22.0",
+    "@supabase/ssr": "^0.5.2",
+    "@supabase/supabase-js": "^2.48.1",
+    "@tanstack/react-table": "^8.21.3",
+    "@tremor/react": "^3.18.7",
+    "class-variance-authority": "^0.7.1",
+    "clsx": "^2.1.1",
+    "inngest": "^4.20.0",
+    "lucide-react": "^0.475.0",
+    "next": "^14.2.24",
+    "openai": "^7.15.0",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "recharts": "^3.10.1",
+    "tailwind-merge": "^3.0.1"
+  },
+  "devDependencies": {
+    "@types/node": "^20.17.19",
+    "@types/react": "^18.3.18",
+    "@types/react-dom": "^18.3.5",
+    "autoprefixer": "^10.4.20",
+    "eslint": "^8.57.1",
+    "eslint-config-next": "^14.2.24",
+    "postcss": "^8.5.2",
+    "prisma": "^5.22.0",
+    "tailwindcss": "^3.4.17",
+    "typescript": "^5.7.3"
+  }
+}

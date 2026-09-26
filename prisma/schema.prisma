@@ -1,0 +1,233 @@
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model User {
+  id        String   @id @default(uuid())
+  email     String   @unique
+  fullName  String?  @map("full_name")
+  avatarUrl String?  @map("avatar_url")
+  role      String   @default("OWNER")
+  brands    Brand[]
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@map("users")
+}
+
+model Brand {
+  id                String            @id @default(uuid())
+  userId            String            @map("user_id")
+  brandName         String            @map("brand_name")
+  domain            String
+  aliases           String[]          @default([])
+  exactUrls         String[]          @default([]) @map("exact_urls")
+  competitors       String[]          @default([])
+  user              User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+  competitorRecords Competitor[]
+  prompts           Prompt[]
+  mentions          BrandMention[]
+  dailyScores       BrandDailyScore[]
+  growthTasks       GrowthTask[]
+  productRecommendations AiProductRecommendation[]
+  promptOpportunities   PromptOpportunity[]
+  createdAt         DateTime          @default(now()) @map("created_at")
+  updatedAt         DateTime          @updatedAt @map("updated_at")
+
+  @@map("brands")
+}
+
+model Competitor {
+  id             String   @id @default(uuid())
+  brandId        String   @map("brand_id")
+  competitorName String   @map("competitor_name")
+  domain         String
+  brand          Brand    @relation(fields: [brandId], references: [id], onDelete: Cascade)
+  createdAt      DateTime @default(now()) @map("created_at")
+  updatedAt      DateTime @updatedAt @map("updated_at")
+
+  @@index([brandId])
+  @@map("competitors")
+}
+
+model Prompt {
+  id            String         @id @default(uuid())
+  brandId       String         @map("brand_id")
+  queryText     String         @map("query_text")
+  frequency     String         @default("daily") // "daily" or "weekly"
+  targetEngines String[]       @default(["chatgpt", "gemini", "copilot", "claude"]) @map("target_engines")
+  promptType     String?        @default("Recommendation") @map("prompt_type")
+  brandedType    String?        @default("Unbranded") @map("branded_type")
+  searchIntent   String?        @default("Commercial") @map("search_intent")
+  promptCategory String?        @default("Top of Funnel Discovery") @map("prompt_category")
+  brand         Brand          @relation(fields: [brandId], references: [id], onDelete: Cascade)
+  results       PromptResult[]
+  productRecommendations AiProductRecommendation[]
+  createdAt     DateTime       @default(now()) @map("created_at")
+  updatedAt     DateTime       @updatedAt @map("updated_at")
+
+  @@index([brandId])
+  @@map("prompts")
+}
+
+enum PromptResultStatus {
+  queued
+  running
+  completed
+  partial_success
+  failed
+}
+
+model PromptResult {
+  id                 String             @id @default(uuid())
+  promptId           String             @map("prompt_id")
+  brandId            String?            @map("brand_id")
+  engineName         String             @map("engine_name")
+  rawResponseText    String             @map("raw_response_text") @db.Text
+  responsePayload    Json?              @map("response_payload") @db.JsonB
+  citations          Json?              @map("citations") @db.JsonB
+  status             PromptResultStatus @default(completed)
+  errorLog           Json?              @map("error_log") @db.JsonB
+  retryCount         Int                @default(0) @map("retry_count")
+  executionTimestamp DateTime           @default(now()) @map("execution_timestamp")
+  prompt             Prompt             @relation(fields: [promptId], references: [id], onDelete: Cascade)
+  brandMentions      BrandMention[]
+  citationDomains    CitationDomain[]
+  productRecommendations AiProductRecommendation[]
+  createdAt          DateTime           @default(now()) @map("created_at")
+
+  @@index([promptId])
+  @@index([executionTimestamp])
+  @@index([status])
+  @@index([brandId, executionTimestamp(sort: Desc)])
+  @@map("prompt_results")
+}
+
+model GrowthTask {
+  id                 String    @id @default(uuid())
+  brandId            String    @map("brand_id")
+  recommendationText String    @map("recommendation_text") @db.Text
+  status             String    @default("To Do") // "To Do", "In Progress", "Implemented", "Dismissed"
+  impact             String    @default("High")  // "High", "Medium", "Quick Win"
+  category           String    @default("Content Structure") // "Content Structure", "Citations & PR", "Sentiment & Perception", "Schema & Technical"
+  targetEngine       String    @default("All Engines") @map("target_engine")
+  estimatedLift      String    @default("+5-10 pts") @map("estimated_lift")
+  implementedDate    DateTime? @map("implemented_date")
+  notes              String?   @db.Text
+  brand              Brand     @relation(fields: [brandId], references: [id], onDelete: Cascade)
+  createdAt          DateTime  @default(now()) @map("created_at")
+  updatedAt          DateTime  @updatedAt @map("updated_at")
+
+  @@index([brandId])
+  @@index([status])
+  @@map("growth_tasks")
+}
+
+model BrandMention {
+  id                 String       @id @default(uuid())
+  promptResultId     String       @map("prompt_result_id")
+  brandId            String       @map("brand_id")
+  isCompetitor       Boolean      @default(false) @map("is_competitor")
+  entityName         String       @map("entity_name")
+  mentionCount       Int          @default(1) @map("mention_count")
+  positionRank       Int          @map("position_rank")
+  positionContext    String       @map("position_context") // "top_recommendation", "bullet_list", "passing_mention", "conclusion"
+  sentiment          String?      @map("sentiment") // "positive", "neutral", "negative"
+  sentimentReasoning String?      @db.Text @map("sentiment_reasoning")
+  promptResult       PromptResult @relation(fields: [promptResultId], references: [id], onDelete: Cascade)
+  brand              Brand        @relation(fields: [brandId], references: [id], onDelete: Cascade)
+  createdAt          DateTime     @default(now()) @map("created_at")
+
+  @@index([brandId])
+  @@index([promptResultId])
+  @@index([isCompetitor])
+  @@map("brand_mentions")
+}
+
+model CitationDomain {
+  id             String       @id @default(uuid())
+  promptResultId String       @map("prompt_result_id")
+  url            String       @db.Text
+  domain         String
+  isBrandOwned   Boolean      @default(false) @map("is_brand_owned")
+  promptResult   PromptResult @relation(fields: [promptResultId], references: [id], onDelete: Cascade)
+  createdAt      DateTime     @default(now()) @map("created_at")
+
+  @@index([promptResultId])
+  @@index([domain])
+  @@index([isBrandOwned])
+  @@map("citation_domains")
+}
+
+model BrandDailyScore {
+  id                   String   @id @default(uuid())
+  brandId              String   @map("brand_id")
+  date                 DateTime @default(now()) @db.Date
+  visibilityScore      Float    @default(0.0) @map("visibility_score")
+  shareOfVoice         Float    @default(0.0) @map("share_of_voice")
+  positiveMentions     Int      @default(0) @map("positive_mentions")
+  neutralMentions      Int      @default(0) @map("neutral_mentions")
+  negativeMentions     Int      @default(0) @map("negative_mentions")
+  totalCitations       Int      @default(0) @map("total_citations")
+  bestPerformingEngine String   @default("—") @map("best_performing_engine")
+  brand                Brand    @relation(fields: [brandId], references: [id], onDelete: Cascade)
+  createdAt            DateTime @default(now()) @map("created_at")
+  updatedAt            DateTime @updatedAt @map("updated_at")
+
+  @@unique([brandId, date])
+  @@index([brandId])
+  @@index([date])
+  @@map("brand_daily_scores")
+}
+
+model AiProductRecommendation {
+  id               String        @id @default(uuid())
+  promptId         String        @map("prompt_id")
+  promptResultId   String?       @map("prompt_result_id")
+  brandId          String?       @map("brand_id")
+  engine           String        // "chatgpt", "perplexity", "gemini", "claude"
+  productName      String        @map("product_name")
+  brandName        String        @map("brand_name")
+  skuOrIdentifier  String?       @map("sku_or_identifier")
+  rankPosition     Int           @map("rank_position")
+  priceMentioned   String?       @map("price_mentioned")
+  sentiment        String?       @default("neutral")
+  rawContext       String        @db.Text @map("raw_context")
+  extractedAt      DateTime      @default(now()) @map("extracted_at")
+
+  prompt           Prompt        @relation(fields: [promptId], references: [id], onDelete: Cascade)
+  promptResult     PromptResult? @relation(fields: [promptResultId], references: [id], onDelete: Cascade)
+  brand            Brand?        @relation(fields: [brandId], references: [id], onDelete: Cascade)
+
+  @@index([promptId])
+  @@index([brandId])
+  @@index([productName])
+  @@index([engine])
+  @@index([extractedAt])
+  @@map("ai_product_recommendations")
+}
+
+model PromptOpportunity {
+  id                 String   @id @default(uuid())
+  brandId            String   @map("brand_id")
+  suggestedPrompt    String   @map("suggested_prompt") @db.Text
+  intentCategory     String   @map("intent_category") // "Discovery", "Consideration", "Commercial"
+  topicCluster       String   @map("topic_cluster")
+  estimatedRelevance Int      @map("estimated_relevance")
+  status             String   @default("pending") // "pending", "accepted", "dismissed"
+  brand              Brand    @relation(fields: [brandId], references: [id], onDelete: Cascade)
+  createdAt          DateTime @default(now()) @map("created_at")
+  updatedAt          DateTime @updatedAt @map("updated_at")
+
+  @@index([brandId])
+  @@index([status])
+  @@index([topicCluster])
+  @@index([createdAt(sort: Desc)])
+  @@map("prompt_opportunities")
+}

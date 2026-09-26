@@ -1,0 +1,26 @@
+[
+  {
+    "query": "What are the environmental impacts of vertical farming vs traditional farming",
+    "mode": "ai_overview_grounded",
+    "status": "failed",
+    "timestamp": "2026-09-16T16:48:10.773992+00:00",
+    "data": {
+      "raw_ai_text": "",
+      "citations": [],
+      "search_queries": []
+    },
+    "error": "404 NOT_FOUND. {'error': {'code': 404, 'message': 'This model models/gemini-2.5-flash is no longer available to new users. Please update your code to use models/gemini-3.6-flash for the latest features and improvements. We recommend you to use the Interactions API.', 'status': 'NOT_FOUND'}}"
+  },
+  {
+    "query": "Explain the core components needed to construct an electric car battery pack",
+    "mode": "ai_overview_grounded",
+    "status": "failed",
+    "timestamp": "2026-09-16T16:48:11.011897+00:00",
+    "data": {
+      "raw_ai_text": "",
+      "citations": [],
+      "search_queries": []
+    },
+    "error": "404 NOT_FOUND. {'error': {'code': 404, 'message': 'This model models/gemini-2.5-flash is no longer available to new users. Please update your code to use models/gemini-3.6-flash for the latest features and improvements. We recommend you to use the Interactions API.', 'status': 'NOT_FOUND'}}"
+  }
+]
