@@ -5,9 +5,12 @@
   "scripts": {
     "dev": "next dev",
     "build": "next build",
-    "start": "next start",
+    "start": "next start -H 0.0.0.0",
     "lint": "next lint",
     "postinstall": "prisma generate"
+  },
+  "engines": {
+    "node": ">=18.17.0"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.125.0",
