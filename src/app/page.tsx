@@ -1,315 +1,194 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React from "react";
 import Link from "next/link";
-import { useBrand } from "@/context/brand-context";
-import { useGlobalFilters } from "@/context/filter-context";
-import { getBrandDashboardDataAction } from "@/app/actions/analytics-actions";
-import { DashboardAnalyticsData } from "@/lib/types";
-import { SovTrajectoryChart } from "@/components/dashboard/sov-trajectory-chart";
-import { TopCitedDomains } from "@/components/dashboard/top-cited-domains";
-import { DomainAuthorityDonutChart } from "@/components/dashboard/domain-authority-donut-chart";
-import { EnginePerformanceChart } from "@/components/dashboard/engine-performance-chart";
-import { SentimentDistributionChart } from "@/components/dashboard/sentiment-distribution-chart";
-import { PromptVolatilityHeatmap } from "@/components/dashboard/prompt-volatility-heatmap";
-import { SentimentDetailsSheet } from "@/components/dashboard/sentiment-details-sheet";
-import { TopKpiRow } from "@/components/dashboard/top-kpi-row";
-import { DateRangePicker } from "@/components/ui/date-range-picker";
+import { LandingNavbar } from "@/components/landing/navbar";
+import { HeroScanner } from "@/components/landing/hero-scanner";
+import { DashboardWindowReplica } from "@/components/landing/dashboard-window-replica";
+import { ProductTourTabs } from "@/components/landing/product-tour-tabs";
+import { BentoGrid } from "@/components/landing/bento-grid";
+import { PricingSection } from "@/components/landing/pricing-section";
+import { FaqAccordion } from "@/components/landing/faq-accordion";
+import { FinalCta } from "@/components/landing/final-cta";
 import { EngineFavicon } from "@/components/ui/favicon";
-import { ArrowRight, AlertTriangle, X } from "lucide-react";
-import { useInspector } from "@/context/inspector-context";
 
-export default function BrandInsightsOverviewPage() {
-  const { currentBrand } = useBrand();
-  const { openInspector } = useInspector();
-  const { dateRange, dateRangeDays, setDateRange } = useGlobalFilters();
-  const [data, setData] = useState<DashboardAnalyticsData | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
-  const [isAlertDismissed, setIsAlertDismissed] = useState(false);
-
-  // Sentiment Drawer state
-  const [isSentimentDrawerOpen, setIsSentimentDrawerOpen] = useState(false);
-  const [activeSentimentFilter, setActiveSentimentFilter] = useState<
-    "positive" | "neutral" | "negative" | "all"
-  >("all");
-
-  const timeframeDays = dateRangeDays;
-
-  const loadData = () => {
-    setIsLoading(true);
-    getBrandDashboardDataAction(currentBrand.id, timeframeDays).then((res) => {
-      setData(res);
-      setIsLoading(false);
-    });
-  };
-
-  useEffect(() => {
-    loadData();
-  }, [currentBrand.id, dateRange, dateRangeDays]);
-
-  const handleOpenSentimentDrawer = (
-    sentiment: "positive" | "neutral" | "negative" | "all" = "all"
-  ) => {
-    setActiveSentimentFilter(sentiment);
-    setIsSentimentDrawerOpen(true);
-  };
-
-  const breakdown = data?.breakdown;
-  const currentSoV =
-    breakdown?.shareOfVoice !== undefined ? breakdown.shareOfVoice : 0;
-  const bestEngine =
-    breakdown?.bestPerformingEngine ||
-    data?.engineMetrics?.[0]?.engine ||
-    "";
-  const bestEngineMetric =
-    data?.engineMetrics?.find((m) => m.engine === bestEngine) ||
-    data?.engineMetrics?.[0];
-  const bestEngineRate =
-    bestEngineMetric?.appearanceRate ??
-    bestEngineMetric?.topPickWinRate ??
-    0;
-  const positivePct = data?.sentimentDist?.positivePercentage ?? 0;
-  const sentimentLabel =
-    positivePct >= 60 ? "Positive" : positivePct > 0 && positivePct <= 40 ? "Negative" : "Neutral";
-
+export default function MarketingLandingPage() {
   return (
-    <div className="space-y-6 pb-12">
-      {/* Header & Subtitle - Clean, Minimalist Layout matching reference */}
-      <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
-        <div>
-          <h1 className="text-2xl sm:text-3xl font-semibold tracking-tight text-slate-900">
-            Brand Insights Overview
-          </h1>
-          <p className="text-xs text-slate-500 mt-1">
-            Comprehensive competitive benchmarking and generative perception for{" "}
-            <span className="font-medium text-slate-800">{currentBrand.brandName}</span>
-          </p>
-        </div>
+    <div className="min-h-screen bg-[#F8FAFC] text-slate-900 flex flex-col justify-between selection:bg-emerald-100 selection:text-emerald-900">
+      {/* 1. Sticky SaaS-Styled Top Navbar */}
+      <LandingNavbar />
 
-        {/* Top-Right Controls */}
-        <div className="shrink-0">
-          <DateRangePicker onRefresh={loadData} isRefreshing={isLoading} />
-        </div>
-      </div>
+      <main className="flex-1">
+        {/* 2. Hero Section & Interactive Live Prompt Scanner */}
+        <HeroScanner />
 
-      {/* Dismissible Minimalist Health Alert / Anomaly Banner */}
-      {!isAlertDismissed && (
-        <div className="bg-amber-50/70 border border-amber-200/70 text-amber-900 rounded-xl px-4 py-2.5 flex items-center justify-between text-xs shadow-2xs transition-all">
-          <div className="flex items-center gap-2.5 min-w-0">
-            <span className="w-6 h-6 rounded-lg bg-amber-100/90 flex items-center justify-center shrink-0 text-amber-800">
-              <AlertTriangle className="w-3.5 h-3.5" />
-            </span>
-            <div className="truncate">
-              <span className="font-semibold text-amber-950">Algorithm Volatility Detected:</span>{" "}
-              <span>Perplexity & ChatGPT model inclusion for <strong className="font-semibold">{currentBrand.brandName}</strong> fluctuated +4.8% this week.</span>
-              <button
-                type="button"
-                onClick={() =>
-                  openInspector({
-                    queryText: "best squat proof leggings for gym",
-                    engine: "perplexity",
-                  })
-                }
-                className="ml-2 font-semibold underline underline-offset-2 hover:text-amber-950 inline-flex items-center gap-0.5 cursor-pointer"
-              >
-                Inspect footprint <ArrowRight className="w-3 h-3 inline" />
-              </button>
+        {/* 3. Hero Centerpiece: Animated High-DPI Replica of Brand Insights Overview */}
+        <section id="overview" className="pb-16 sm:pb-20 pt-4">
+          <DashboardWindowReplica />
+        </section>
+
+        {/* Multi-Engine Telemetry Benchmarking Row */}
+        <section className="border-y border-slate-200/80 bg-white py-12">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="text-center max-w-2xl mx-auto mb-8">
+              <span className="text-[11px] font-semibold tracking-wider text-emerald-700 bg-emerald-50 border border-emerald-200/80 px-2.5 py-1 rounded-full uppercase">
+                Enterprise Multi-Engine Telemetry
+              </span>
+              <h3 className="text-2xl font-bold tracking-tight text-slate-900 mt-2.5">
+                Continuously Benchmarked Across Every Major Answer Engine
+              </h3>
             </div>
-          </div>
-          <button
-            onClick={() => setIsAlertDismissed(true)}
-            title="Dismiss notification"
-            aria-label="Dismiss alert"
-            className="p-1 rounded-md text-amber-600 hover:text-amber-900 hover:bg-amber-100/60 transition-colors shrink-0 ml-3"
-          >
-            <X className="w-3.5 h-3.5" />
-          </button>
-        </div>
-      )}
 
-      {/* Step 2: 4 KPI Cards: AEO Score, Share of Voice, AI Sentiment, Websites Citing You */}
-      <TopKpiRow
-        data={data}
-        onOpenSentiment={() => handleOpenSentimentDrawer("positive")}
-      />
-
-      {/* 2-Column Data Visualization Grid matching reference images */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Panel 1: Share of Voice */}
-        <div className="bg-white rounded-xl border border-slate-200/60 p-6 shadow-2xs flex flex-col justify-between min-h-[350px]">
-          <div className="mb-3">
-            <div className="flex items-center justify-between mb-1">
-              <h2 className="text-base font-semibold text-slate-900">
-                Share of Voice
-              </h2>
-            </div>
-            <p className="text-xs text-slate-400 font-normal">
-              Multi-engine brand vs competitor visibility over time
-            </p>
-          </div>
-          <div className="flex-1">
-            <SovTrajectoryChart
-              data={data?.trajectory || []}
-              currentSoV={currentSoV}
-              brandName={currentBrand.brandName}
-            />
-          </div>
-        </div>
-
-        {/* Panel 2: AI Engine Performance */}
-        <div className="bg-white rounded-xl border border-slate-200/60 p-6 shadow-2xs flex flex-col justify-between min-h-[350px]">
-          <div className="mb-3">
-            <div className="flex items-center justify-between mb-1">
-              <h2 className="text-base font-semibold text-slate-900">
-                AI Engine Performance
-              </h2>
-              <Link
-                href="/reports/models"
-                className="text-xs font-medium text-emerald-600 hover:text-emerald-700 transition-colors"
-              >
-                View Benchmarks &rarr;
-              </Link>
-            </div>
-            <p className="text-xs text-slate-400 font-normal">
-              Visibility and win rate across AI search engines
-            </p>
-          </div>
-          <div className="flex-1">
-            <EnginePerformanceChart metrics={data?.engineMetrics || []} />
-          </div>
-        </div>
-
-        {/* Panel 3: Domain Authority Distribution Donut Chart */}
-        <div className="bg-white rounded-xl border border-slate-200/60 p-6 shadow-2xs flex flex-col justify-between min-h-[350px]">
-          <div className="mb-3">
-            <div className="flex items-center justify-between mb-1">
-              <h2 className="text-base font-semibold text-slate-900">
-                Domain Authority Distribution
-              </h2>
-              <Link
-                href="/reports/citations"
-                className="text-xs font-medium text-emerald-600 hover:text-emerald-700 transition-colors"
-              >
-                View Explorer &rarr;
-              </Link>
-            </div>
-            <p className="text-xs text-slate-400 font-normal">
-              Key authority sources across UGC, editorial, owned, and reviews
-            </p>
-          </div>
-          <div className="flex-1">
-            <DomainAuthorityDonutChart
-              breakdown={data?.domainTypeBreakdown}
-            />
-          </div>
-        </div>
-
-        {/* Panel 4: Top AI Citation Sources */}
-        <div className="bg-white rounded-xl border border-slate-200/60 p-6 shadow-2xs flex flex-col justify-between min-h-[350px]">
-          <div className="mb-3">
-            <div className="flex items-center justify-between mb-1">
-              <h2 className="text-base font-semibold text-slate-900">
-                Top AI Citation Sources
-              </h2>
-              <Link
-                href="/reports/citations"
-                className="text-xs font-medium text-emerald-600 hover:text-emerald-700 transition-colors"
-              >
-                View Explorer &rarr;
-              </Link>
-            </div>
-            <p className="text-xs text-slate-400 font-normal">
-              The websites AI engines rely on most when answering about your brand
-            </p>
-          </div>
-          <div className="flex-1">
-            <TopCitedDomains
-              domains={data?.topDomains || []}
-              breakdown={data?.domainTypeBreakdown}
-              brandName={currentBrand.brandName}
-            />
-          </div>
-        </div>
-
-        {/* Panel 5: Sentiment Distribution */}
-        <div className="bg-white rounded-xl border border-slate-200/60 p-6 shadow-2xs flex flex-col justify-between min-h-[350px]">
-          <div className="mb-3">
-            <div className="flex items-center justify-between mb-1">
-              <h2 className="text-base font-semibold text-slate-900">
-                Sentiment Distribution
-              </h2>
-              <button
-                type="button"
-                onClick={() => handleOpenSentimentDrawer("all")}
-                className="text-xs font-medium text-emerald-600 hover:text-emerald-700 transition-colors cursor-pointer"
-              >
-                Inspect All Snippets &rarr;
-              </button>
-            </div>
-            <p className="text-xs text-slate-400 font-normal">
-              AI tone analysis across recommendation responses
-            </p>
-          </div>
-          <div className="flex-1">
-            <SentimentDistributionChart
-              data={
-                data?.sentimentDist || {
-                  positiveCount: 0,
-                  neutralCount: 0,
-                  negativeCount: 0,
-                  positivePercentage: 0,
-                  neutralPercentage: 0,
-                  negativePercentage: 0,
-                }
-              }
-              snippets={data?.sentimentSnippets || []}
-              onSelectSentiment={(sentiment) => {
-                setActiveSentimentFilter(sentiment);
-              }}
-              onOpenDrawer={(sentiment) => handleOpenSentimentDrawer(sentiment)}
-            />
-          </div>
-        </div>
-
-        {/* Panel 6: Prompt Volatility & Rank Fluctuation Heatmap */}
-        <div className="bg-white rounded-xl border border-slate-200/60 p-6 shadow-2xs flex flex-col justify-between min-h-[350px]">
-          <div className="mb-3">
-            <div className="flex items-center justify-between mb-1">
-              <div className="flex items-center gap-2">
-                <h2 className="text-base font-semibold text-slate-900">
-                  Prompt Volatility & Rank Fluctuation
-                </h2>
-                <span className="text-[10px] font-normal bg-slate-100 text-slate-600 px-2 py-0.5 rounded">
-                  7-Day Heatmap
-                </span>
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 sm:gap-6">
+              {/* Engine 1: Perplexity */}
+              <div className="bg-[#F8FAFC] border border-slate-200/80 rounded-2xl p-5 hover:border-slate-300 transition-all shadow-2xs">
+                <div className="flex items-center justify-between mb-3">
+                  <EngineFavicon engine="perplexity" size={24} />
+                  <span className="text-xs font-mono font-bold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded">
+                    88/100
+                  </span>
+                </div>
+                <div className="font-semibold text-sm text-slate-900">
+                  Perplexity AI
+                </div>
+                <div className="text-xs text-slate-500 mt-1">
+                  Real-time web grounding, inline citations & Sonar index rank
+                </div>
               </div>
-              <Link
-                href="/tools/prompts"
-                className="text-xs font-medium text-emerald-600 hover:text-emerald-700 transition-colors"
-              >
-                Audit Prompts &rarr;
-              </Link>
+
+              {/* Engine 2: ChatGPT */}
+              <div className="bg-[#F8FAFC] border border-slate-200/80 rounded-2xl p-5 hover:border-slate-300 transition-all shadow-2xs">
+                <div className="flex items-center justify-between mb-3">
+                  <EngineFavicon engine="chatgpt" size={24} />
+                  <span className="text-xs font-mono font-bold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded">
+                    82/100
+                  </span>
+                </div>
+                <div className="font-semibold text-sm text-slate-900">
+                  OpenAI ChatGPT
+                </div>
+                <div className="text-xs text-slate-500 mt-1">
+                  Search carousel tiles, commercial products & domain grounding
+                </div>
+              </div>
+
+              {/* Engine 3: Gemini */}
+              <div className="bg-[#F8FAFC] border border-slate-200/80 rounded-2xl p-5 hover:border-slate-300 transition-all shadow-2xs">
+                <div className="flex items-center justify-between mb-3">
+                  <EngineFavicon engine="gemini" size={24} />
+                  <span className="text-xs font-mono font-bold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded">
+                    71/100
+                  </span>
+                </div>
+                <div className="font-semibold text-sm text-slate-900">
+                  Google Gemini
+                </div>
+                <div className="text-xs text-slate-500 mt-1">
+                  Google Search grounding, Knowledge Graph & product catalog
+                </div>
+              </div>
+
+              {/* Engine 4: Claude */}
+              <div className="bg-[#F8FAFC] border border-slate-200/80 rounded-2xl p-5 hover:border-slate-300 transition-all shadow-2xs">
+                <div className="flex items-center justify-between mb-3">
+                  <EngineFavicon engine="claude" size={24} />
+                  <span className="text-xs font-mono font-bold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded">
+                    67/100
+                  </span>
+                </div>
+                <div className="font-semibold text-sm text-slate-900">
+                  Anthropic Claude
+                </div>
+                <div className="text-xs text-slate-500 mt-1">
+                  Constitutional synthesis, editorial authority & review sentiment
+                </div>
+              </div>
             </div>
-            <p className="text-xs text-slate-400 font-normal">
-              Day-to-day ranking shifts to instantly spot AI algorithm shake-ups
-            </p>
           </div>
-          <div className="flex-1">
-            <PromptVolatilityHeatmap brandName={currentBrand.brandName} />
+        </section>
+
+        {/* 4. Phase 2 Interactive 4-Screen Product Tour Switcher */}
+        <ProductTourTabs />
+
+        {/* 5. Phase 2 3-Card Animated Bento Grid */}
+        <BentoGrid />
+
+        {/* 6. Phase 3 Synchronized 4-Tier Pricing Grid & ROI Calculator */}
+        <PricingSection />
+
+        {/* 7. Phase 3 Executive GEO/AEO FAQ Accordion */}
+        <FaqAccordion />
+
+        {/* 8. Phase 3 High-Contrast Final CTA Card */}
+        <FinalCta />
+      </main>
+
+      {/* Enterprise SaaS-Matched Marketing Footer */}
+      <footer className="border-t border-slate-200/80 bg-white py-12 text-xs text-slate-500">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-8">
+          <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-6 pb-8 border-b border-slate-100">
+            <div className="flex items-center gap-3">
+              <div className="w-8 h-8 rounded-xl bg-slate-900 flex items-center justify-center text-white shadow-2xs">
+                <svg
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  className="w-4 h-4"
+                  stroke="currentColor"
+                  strokeWidth="2.2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                >
+                  <path d="M12 2L2 7l10 5 10-5-10-5z" />
+                  <path d="M2 17l10 5 10-5" />
+                  <path d="M2 12l10 5 10-5" />
+                </svg>
+              </div>
+              <div>
+                <span className="font-bold text-slate-900 text-sm">Recomnd v1.0</span>
+                <p className="text-[11px] text-slate-400">
+                  The Enterprise Operating System for Generative Engine Optimization
+                </p>
+              </div>
+            </div>
+
+            <div className="flex items-center gap-6 font-medium">
+              <Link href="/dashboard" className="text-slate-600 hover:text-slate-900 transition-colors">
+                Gymshark Sandbox
+              </Link>
+              <Link href="/reports/citations" className="text-slate-600 hover:text-slate-900 transition-colors">
+                Citations
+              </Link>
+              <Link href="/reports/shopping" className="text-slate-600 hover:text-slate-900 transition-colors">
+                AI Shopping
+              </Link>
+              <Link href="/reports/models" className="text-slate-600 hover:text-slate-900 transition-colors">
+                Models
+              </Link>
+              <Link href="/tools/growth" className="text-slate-600 hover:text-slate-900 transition-colors">
+                Playbooks
+              </Link>
+              <a href="#pricing" className="text-slate-600 hover:text-slate-900 transition-colors">
+                Pricing
+              </a>
+            </div>
+          </div>
+
+          <div className="flex flex-col sm:flex-row items-center justify-between gap-4 text-slate-400">
+            <div>
+              &copy; {new Date().getFullYear()} Recomnd Technologies, Inc. All rights reserved.
+            </div>
+            <div className="flex items-center gap-4">
+              <span>SOC2 Type II Certified</span>
+              <span>&bull;</span>
+              <span>GDPR Compliant</span>
+              <span>&bull;</span>
+              <a href="#overview" className="hover:text-slate-700 transition-colors">
+                Back to top &uarr;
+              </a>
+            </div>
           </div>
         </div>
-      </div>
-
-      {/* Sentiment Drill-Down Slide-Out Sheet */}
-      <SentimentDetailsSheet
-        isOpen={isSentimentDrawerOpen}
-        onClose={() => setIsSentimentDrawerOpen(false)}
-        initialSentiment={activeSentimentFilter}
-        snippets={data?.sentimentSnippets || []}
-        brandName={currentBrand.brandName}
-      />
+      </footer>
     </div>
   );
 }
-
-
