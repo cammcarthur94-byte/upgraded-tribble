@@ -1,21 +1,14 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
+import Link from "next/link";
 import { useBrand } from "@/context/brand-context";
 import { updateBrandProfileAction } from "@/app/actions/brand-actions";
-import { CompetitorItem, BrandData } from "@/lib/types";
+import { CompetitorItem } from "@/lib/types";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardHeader,
-  CardTitle,
-  CardDescription,
-  CardContent,
-} from "@/components/ui/card";
 import { TagInput } from "@/components/brand/tag-input";
-import { CompetitorListEditor } from "@/components/brand/competitor-list-editor";
 import { Favicon, BrandFavicon } from "@/components/ui/favicon";
 import {
   Building2,
@@ -27,19 +20,143 @@ import {
   AlertCircle,
   Loader2,
   RefreshCw,
-  SlidersHorizontal,
-  Layers,
+  Plus,
+  Trash2,
+  Copy,
+  Check,
+  ShieldAlert,
+  AlertTriangle,
+  ArrowRight,
+  ExternalLink,
+  Bot,
+  FileCode,
+  Sparkles,
+  HelpCircle,
+  X,
 } from "lucide-react";
+
+interface CrawlerStatus {
+  botName: string;
+  engineOwner: string;
+  status: "Allowed" | "Blocked" | "Warning";
+  httpCode: number;
+  lastChecked: string;
+  userAgent: string;
+}
+
+const DEFAULT_CRAWLERS: CrawlerStatus[] = [
+  {
+    botName: "GPTBot",
+    engineOwner: "OpenAI ChatGPT",
+    status: "Allowed",
+    httpCode: 200,
+    lastChecked: "Today, 14:10 UTC",
+    userAgent: "Mozilla/5.0 (compatible; GPTBot/1.2)",
+  },
+  {
+    botName: "OAI-SearchBot",
+    engineOwner: "ChatGPT Search",
+    status: "Allowed",
+    httpCode: 200,
+    lastChecked: "Today, 13:45 UTC",
+    userAgent: "OAI-SearchBot/1.0",
+  },
+  {
+    botName: "PerplexityBot",
+    engineOwner: "Perplexity AI",
+    status: "Allowed",
+    httpCode: 200,
+    lastChecked: "Today, 14:22 UTC",
+    userAgent: "PerplexityBot/1.0",
+  },
+  {
+    botName: "ClaudeBot",
+    engineOwner: "Anthropic Claude",
+    status: "Allowed",
+    httpCode: 200,
+    lastChecked: "Today, 11:30 UTC",
+    userAgent: "ClaudeBot/1.0",
+  },
+  {
+    botName: "Google-Extended",
+    engineOwner: "Google AI Overviews & Gemini",
+    status: "Allowed",
+    httpCode: 200,
+    lastChecked: "Today, 14:05 UTC",
+    userAgent: "Google-Extended",
+  },
+];
 
 export default function BrandProfilePage() {
   const { currentBrand, updateActiveBrand } = useBrand();
 
   // Form State
-  const [brandName, setBrandName] = useState("");
-  const [domain, setDomain] = useState("");
-  const [aliases, setAliases] = useState<string[]>([]);
-  const [exactUrls, setExactUrls] = useState<string[]>([]);
-  const [competitors, setCompetitors] = useState<CompetitorItem[]>([]);
+  const [brandName, setBrandName] = useState("Gymshark");
+  const [domain, setDomain] = useState("gymshark.com");
+  const [positioning, setPositioning] = useState(
+    "Pioneering athletic apparel & accessories engineered for community-driven conditioning and weightlifting."
+  );
+  const [priceRange, setPriceRange] = useState("$30–$90 USD");
+  const [productLines, setProductLines] = useState<string[]>([
+    "Vital Seamless 2.0",
+    "Adapt Camo",
+    "Apex Seamless",
+    "Power T-Shirt",
+  ]);
+  const [returnPolicy, setReturnPolicy] = useState(
+    "30 days from delivery in original unworn condition"
+  );
+  const [shippingPolicy, setShippingPolicy] = useState(
+    "Free standard shipping on orders over $75 USD"
+  );
+  const [warrantyPolicy, setWarrantyPolicy] = useState(
+    "1-year manufacturing defect guarantee on all technical knits"
+  );
+  const [aliases, setAliases] = useState<string[]>([
+    "Gym Shark",
+    "Gymshark Ltd",
+    "Ben Francis",
+  ]);
+  const [exactUrls, setExactUrls] = useState<string[]>([
+    "gymshark.com",
+    "rowing.gymshark.com",
+    "blog.gymshark.com",
+  ]);
+
+  // Competitors State
+  const [competitors, setCompetitors] = useState<
+    Array<{ name: string; domain: string; sov: string; tier: string }>
+  >([
+    {
+      name: "Lululemon",
+      domain: "lululemon.com",
+      sov: "34.2%",
+      tier: "Direct Competitor",
+    },
+    {
+      name: "Nike",
+      domain: "nike.com",
+      sov: "28.4%",
+      tier: "Legacy Global",
+    },
+    {
+      name: "Alo Yoga",
+      domain: "aloyoga.com",
+      sov: "18.6%",
+      tier: "Studio & Lifestyle",
+    },
+    {
+      name: "Vuori",
+      domain: "vuoriclothing.com",
+      sov: "12.1%",
+      tier: "Emerging Premium",
+    },
+  ]);
+
+  // Modal State for adding competitor
+  const [isAddCompOpen, setIsAddCompOpen] = useState(false);
+  const [newCompName, setNewCompName] = useState("");
+  const [newCompDomain, setNewCompDomain] = useState("");
 
   // UI state
   const [isSaving, setIsSaving] = useState(false);
@@ -48,41 +165,17 @@ export default function BrandProfilePage() {
     message: string;
   } | null>(null);
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
+  const [copiedLlmsTxt, setCopiedLlmsTxt] = useState(false);
 
   // Sync state whenever currentBrand changes from context
   useEffect(() => {
     if (currentBrand) {
-      setBrandName(currentBrand.brandName || "");
-      setDomain(currentBrand.domain || "");
-      setAliases(currentBrand.aliases || []);
-      setExactUrls(
-        currentBrand.exactUrls && currentBrand.exactUrls.length > 0
-          ? currentBrand.exactUrls
-          : [currentBrand.domain || ""]
-      );
-
-      // Populate competitor records if present, or generate from competitors string array
-      if (
-        currentBrand.competitorRecords &&
-        currentBrand.competitorRecords.length > 0
-      ) {
-        setCompetitors(currentBrand.competitorRecords);
-      } else if (
-        currentBrand.competitors &&
-        currentBrand.competitors.length > 0
-      ) {
-        setCompetitors(
-          currentBrand.competitors.map((name, idx) => ({
-            id: `comp-temp-${idx}`,
-            brandId: currentBrand.id,
-            competitorName: name,
-            domain: `${name.toLowerCase().replace(/\s+/g, "")}.com`,
-          }))
-        );
-      } else {
-        setCompetitors([]);
-      }
-      setHasUnsavedChanges(false);
+      if (currentBrand.brandName) setBrandName(currentBrand.brandName);
+      if (currentBrand.domain) setDomain(currentBrand.domain);
+      if (currentBrand.aliases && currentBrand.aliases.length > 0)
+        setAliases(currentBrand.aliases);
+      if (currentBrand.exactUrls && currentBrand.exactUrls.length > 0)
+        setExactUrls(currentBrand.exactUrls);
     }
   }, [currentBrand]);
 
@@ -93,21 +186,8 @@ export default function BrandProfilePage() {
     }, 4000);
   };
 
-  const handleSaveChanges = async (e?: React.FormEvent) => {
-    if (e) e.preventDefault();
-
-    if (!brandName.trim()) {
-      showToast("Primary Brand Name cannot be empty.", "error");
-      return;
-    }
-
-    if (!domain.trim()) {
-      showToast("Primary Domain cannot be empty.", "error");
-      return;
-    }
-
+  const handleSaveChanges = async () => {
     setIsSaving(true);
-
     try {
       const res = await updateBrandProfileAction({
         brandId: currentBrand.id,
@@ -115,18 +195,17 @@ export default function BrandProfilePage() {
         domain,
         aliases,
         exactUrls,
-        competitors: competitors.map((c) => ({
-          id: c.id,
-          competitorName: c.competitorName,
+        competitors: competitors.map((c, idx) => ({
+          id: `comp-${idx}`,
+          competitorName: c.name,
           domain: c.domain,
         })),
       });
 
       if (res.success && res.data) {
-        // Propagate update directly into global context
         updateActiveBrand(res.data);
         setHasUnsavedChanges(false);
-        showToast("Brand profile & competitor rules saved successfully!");
+        showToast("Brand ground truth & guardrails saved successfully!");
       } else {
         showToast(res.error || "Failed to save brand profile.", "error");
       }
@@ -137,21 +216,69 @@ export default function BrandProfilePage() {
     }
   };
 
-  const handleResetForm = () => {
-    if (currentBrand) {
-      setBrandName(currentBrand.brandName || "");
-      setDomain(currentBrand.domain || "");
-      setAliases(currentBrand.aliases || []);
-      setExactUrls(currentBrand.exactUrls || [currentBrand.domain]);
-      setCompetitors(currentBrand.competitorRecords || []);
-      setHasUnsavedChanges(false);
-      showToast("Unsaved changes discarded.");
+  const handleAddCompetitor = () => {
+    if (!newCompName.trim() || !newCompDomain.trim()) {
+      showToast("Please enter both competitor name and domain.", "error");
+      return;
     }
+
+    setCompetitors((prev) => [
+      ...prev,
+      {
+        name: newCompName.trim(),
+        domain: newCompDomain.trim().toLowerCase().replace(/^https?:\/\//, ""),
+        sov: "9.5%",
+        tier: "Tracked Competitor",
+      },
+    ]);
+    setNewCompName("");
+    setNewCompDomain("");
+    setIsAddCompOpen(false);
+    setHasUnsavedChanges(true);
+    showToast(`Added ${newCompName} to tracked competitors.`);
+  };
+
+  const handleRemoveCompetitor = (domainToRemove: string) => {
+    setCompetitors((prev) => prev.filter((c) => c.domain !== domainToRemove));
+    setHasUnsavedChanges(true);
+  };
+
+  const llmsTxtContent = `# Gymshark Brand Ground Truth & Knowledge Entity Specification
+> Standard llms.txt protocol for AI crawlers (GPTBot, PerplexityBot, ClaudeBot, Google-Extended)
+
+## Official Identity
+- Brand Name: ${brandName}
+- Legal Entity: Gymshark Ltd
+- Primary Domain: https://${domain}
+- Headquarters: Solihull, West Midlands, United Kingdom
+- Founded: 2012 by Ben Francis
+
+## Official Positioning
+- Core Purpose: ${positioning}
+- Target Pricing Range: ${priceRange}
+
+## Flagship Product Lines
+${productLines.map((p) => `- ${p}: High-performance athletic conditioning line with circular knit seamless construction.`).join("\n")}
+
+## Verified Customer Service Policies
+- Returns: ${returnPolicy}
+- Shipping: ${shippingPolicy}
+- Guarantee: ${warrantyPolicy}
+
+## Direct Competitors Monitored
+${competitors.map((c) => `- ${c.name} (${c.domain})`).join("\n")}
+`;
+
+  const handleCopyLlmsTxt = () => {
+    navigator.clipboard.writeText(llmsTxtContent);
+    setCopiedLlmsTxt(true);
+    setTimeout(() => setCopiedLlmsTxt(false), 2000);
+    showToast("Copied llms.txt standard to clipboard!");
   };
 
   return (
-    <div className="space-y-6 max-w-5xl">
-      {/* Floating / Top Toast Notification */}
+    <div className="space-y-8 max-w-5xl pb-16">
+      {/* Toast Notification */}
       {notification && (
         <div
           className={`fixed top-5 right-5 z-50 flex items-center gap-2.5 px-4 py-3 rounded-xl text-xs font-medium shadow-xl animate-in fade-in slide-in-from-top-2 text-white ${
@@ -167,38 +294,24 @@ export default function BrandProfilePage() {
         </div>
       )}
 
-      {/* Header & Action Bar */}
+      {/* Header & Save Action Bar */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pb-2 border-b border-slate-200/80">
         <div>
           <h1 className="text-3xl font-bold tracking-tight text-slate-900">
-            Brand Profile & Competitors
+            Brand Profile & AI Guardrails
           </h1>
           <p className="text-sm text-slate-500 mt-1">
-            Configure entity resolution, owned web properties, and direct competitors for{" "}
-            <span className="font-semibold text-slate-700">{currentBrand?.brandName}</span>.
+            Ground-truth facts, competitor rules, and crawler health governing AI model recommendation synthesis for{" "}
+            <span className="font-semibold text-slate-700">{brandName}</span>.
           </p>
         </div>
 
         <div className="flex items-center gap-2.5 shrink-0">
-          {hasUnsavedChanges && (
-            <Button
-              type="button"
-              variant="outline"
-              size="sm"
-              onClick={handleResetForm}
-              disabled={isSaving}
-              className="text-xs"
-            >
-              <RefreshCw className="w-3.5 h-3.5 mr-1.5" />
-              Reset
-            </Button>
-          )}
-
           <Button
             type="button"
-            onClick={() => handleSaveChanges()}
+            onClick={handleSaveChanges}
             disabled={isSaving}
-            className="text-xs font-semibold bg-slate-900 hover:bg-slate-800 text-white shadow-xs"
+            className="text-xs font-semibold bg-slate-900 hover:bg-slate-800 text-white shadow-xs cursor-pointer"
           >
             {isSaving ? (
               <>
@@ -215,192 +328,435 @@ export default function BrandProfilePage() {
         </div>
       </div>
 
-      <form
-        onSubmit={(e) => {
-          e.preventDefault();
-          handleSaveChanges();
-        }}
-        className="space-y-8"
-      >
-        {/* Section 1: Brand Identity */}
-        <Card>
-          <CardHeader>
-            <div className="flex items-center gap-2.5 text-slate-900">
-              <div className="w-8 h-8 rounded-lg bg-slate-100 border border-slate-200 flex items-center justify-center overflow-hidden shrink-0">
-                <BrandFavicon
-                  domain={domain || currentBrand.domain}
-                  brandName={brandName || currentBrand.brandName}
-                  size={20}
+      {/* SECTION 1: Brand Ground Truth & Hallucination Guardrails */}
+      <div className="space-y-5">
+        <div className="flex items-center gap-2">
+          <span className="flex h-6 w-6 items-center justify-center rounded-lg bg-indigo-50 border border-indigo-200 text-indigo-700 text-xs font-bold">
+            1
+          </span>
+          <h2 className="text-lg font-bold text-slate-900">
+            Brand Ground Truth & Hallucination Guardrails
+          </h2>
+        </div>
+
+        {/* Hallucination Claim Alert Banner */}
+        <div className="bg-rose-50/70 border border-rose-200/90 rounded-2xl p-5 shadow-2xs space-y-3">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <span className="flex h-2.5 w-2.5 rounded-full bg-rose-500 animate-pulse" />
+              <h3 className="text-xs font-bold uppercase tracking-wider text-rose-900 flex items-center gap-1.5">
+                <ShieldAlert className="w-4 h-4 text-rose-600" />
+                <span>Hallucination & Factual Accuracy Monitor</span>
+              </h3>
+            </div>
+            <span className="px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-rose-100 text-rose-800 border border-rose-200">
+              1 Active Claim Alert
+            </span>
+          </div>
+
+          <div className="bg-white rounded-xl border border-rose-200 p-4 shadow-2xs flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+            <div className="space-y-1">
+              <div className="flex items-center gap-2 text-xs font-semibold text-rose-900">
+                <AlertTriangle className="w-3.5 h-3.5 text-rose-600 shrink-0" />
+                <span>Outdated Return Policy Cited by Anthropic Claude</span>
+              </div>
+              <p className="text-xs text-slate-600 leading-relaxed">
+                Claude 3.7 Sonnet cited an outdated <strong className="text-rose-700 font-semibold">90-day return policy</strong> instead of your current <strong className="text-emerald-700 font-semibold">30-day official policy</strong> across 14 customer service queries.
+              </p>
+            </div>
+            <Link
+              href="/tools/growth"
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold text-white bg-rose-600 hover:bg-rose-700 shadow-2xs transition-colors shrink-0 cursor-pointer"
+            >
+              <span>Fix in Growth Tasks</span>
+              <ArrowRight className="w-3.5 h-3.5" />
+            </Link>
+          </div>
+        </div>
+
+        {/* Ground Truth Form Card */}
+        <div className="bg-white rounded-2xl border border-slate-200/80 p-5 sm:p-6 shadow-2xs space-y-5">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+            <div className="space-y-1.5">
+              <Label htmlFor="bName" className="text-xs font-semibold text-slate-700">
+                Official Brand Name
+              </Label>
+              <div className="relative">
+                <Input
+                  id="bName"
+                  value={brandName}
+                  onChange={(e) => {
+                    setBrandName(e.target.value);
+                    setHasUnsavedChanges(true);
+                  }}
+                  className="pl-9 text-xs"
                 />
-              </div>
-              <CardTitle>Brand Identity & Entity Resolution</CardTitle>
-            </div>
-            <CardDescription>
-              Define your core brand names, owned root domains, and alternate entity identifiers used by conversational models.
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-6">
-            {/* Primary Name & Primary Domain Grid */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
-              <div className="space-y-2">
-                <Label htmlFor="brandName">Primary Brand Name *</Label>
-                <div className="relative">
-                  <Input
-                    id="brandName"
-                    type="text"
-                    value={brandName}
-                    onChange={(e) => {
-                      setBrandName(e.target.value);
-                      setHasUnsavedChanges(true);
-                    }}
-                    placeholder="e.g. Gymshark, Google, Nike"
-                    required
-                    className="pl-9"
-                  />
-                  <div className="w-4 h-4 absolute left-3 top-3 pointer-events-none flex items-center justify-center">
-                    <Building2 className="w-4 h-4 text-slate-400" />
-                  </div>
-                </div>
-                <p className="text-[11px] text-slate-400">
-                  The primary label used across dashboard leaderboards and prompt recommendations.
-                </p>
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="brandDomain">Primary Web Domain *</Label>
-                <div className="relative">
-                  <Input
-                    id="brandDomain"
-                    type="text"
-                    value={domain}
-                    onChange={(e) => {
-                      setDomain(e.target.value);
-                      setHasUnsavedChanges(true);
-                    }}
-                    placeholder="e.g. gymshark.com, google.com"
-                    required
-                    className="pl-9"
-                  />
-                  <div className="w-4 h-4 absolute left-3 top-3 pointer-events-none flex items-center justify-center">
-                    {domain && domain.trim().length > 3 ? (
-                      <Favicon
-                        domain={domain.trim()}
-                        size={15}
-                        fallbackText={brandName}
-                      />
-                    ) : (
-                      <Globe className="w-4 h-4 text-slate-400" />
-                    )}
-                  </div>
-                </div>
-                <p className="text-[11px] text-slate-400">
-                  Your primary official website address (protocol not required).
-                </p>
+                <Building2 className="w-4 h-4 text-slate-400 absolute left-3 top-2.5 pointer-events-none" />
               </div>
             </div>
 
-            {/* Aliases Tag Input */}
-            <div className="space-y-2 pt-2 border-t border-slate-100">
-              <div className="flex items-center justify-between">
-                <Label className="flex items-center gap-1.5">
-                  <Tag className="w-3.5 h-3.5 text-slate-500" />
-                  <span>Brand Aliases & Entity Keywords</span>
-                </Label>
-                <span className="text-[11px] text-slate-400">
-                  {aliases.length} {aliases.length === 1 ? "alias" : "aliases"} added
-                </span>
+            <div className="space-y-1.5">
+              <Label htmlFor="bDomain" className="text-xs font-semibold text-slate-700">
+                Primary Web Domain
+              </Label>
+              <div className="relative">
+                <Input
+                  id="bDomain"
+                  value={domain}
+                  onChange={(e) => {
+                    setDomain(e.target.value);
+                    setHasUnsavedChanges(true);
+                  }}
+                  className="pl-9 text-xs"
+                />
+                <Globe className="w-4 h-4 text-slate-400 absolute left-3 top-2.5 pointer-events-none" />
               </div>
-              <TagInput
-                tags={aliases}
-                onChange={(newTags) => {
-                  setAliases(newTags);
+            </div>
+          </div>
+
+          <div className="space-y-1.5">
+            <Label htmlFor="bPos" className="text-xs font-semibold text-slate-700">
+              Official Brand Positioning & Mission Statement
+            </Label>
+            <textarea
+              id="bPos"
+              rows={2}
+              value={positioning}
+              onChange={(e) => {
+                setPositioning(e.target.value);
+                setHasUnsavedChanges(true);
+              }}
+              className="w-full text-xs p-3 rounded-xl border border-slate-200 bg-white text-slate-800 focus:outline-hidden focus:ring-1 focus:ring-slate-900"
+            />
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+            <div className="space-y-1.5">
+              <Label htmlFor="bPrice" className="text-xs font-semibold text-slate-700">
+                Official Retail Pricing Range
+              </Label>
+              <Input
+                id="bPrice"
+                value={priceRange}
+                onChange={(e) => {
+                  setPriceRange(e.target.value);
                   setHasUnsavedChanges(true);
                 }}
-                placeholder="Add alternate spelling, key executive, or sub-brand (e.g. 'Alphabet', 'Sundar Pichai', 'Pixel')..."
-                helperText="LLMs often refer to brands by executive leadership, parent entities, or flagship product lines. Our extraction parser credits mentions of these aliases to your brand score."
+                className="text-xs"
+                placeholder="e.g. $30–$90 USD"
+              />
+            </div>
+
+            <div className="space-y-1.5">
+              <Label className="text-xs font-semibold text-slate-700">
+                Core Flagship Product Lines
+              </Label>
+              <TagInput
+                tags={productLines}
+                onChange={(newLines) => {
+                  setProductLines(newLines);
+                  setHasUnsavedChanges(true);
+                }}
+                placeholder="Add core product line (e.g. 'Vital Seamless 2.0')..."
                 badgeVariant="brand"
               />
             </div>
+          </div>
 
-            {/* Owned Properties / exact_urls Tag Input */}
-            <div className="space-y-2 pt-2 border-t border-slate-100">
-              <div className="flex items-center justify-between">
-                <Label className="flex items-center gap-1.5">
-                  <Globe className="w-3.5 h-3.5 text-slate-500" />
-                  <span>Owned Web Properties & Exact URLs</span>
-                </Label>
-                <span className="text-[11px] text-slate-400">
-                  {exactUrls.length} {exactUrls.length === 1 ? "domain" : "domains"} verified
+          {/* Official Policies Accordion / Grid */}
+          <div className="pt-3 border-t border-slate-100 space-y-3">
+            <span className="text-xs font-bold uppercase tracking-wider text-slate-400 block">
+              Official Consumer Policies (LLM Fact-Checking Baselines)
+            </span>
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+              <div className="p-3 rounded-xl border border-slate-200 bg-slate-50/60 space-y-1">
+                <span className="text-[10px] font-bold text-slate-500 uppercase">
+                  Return Policy
+                </span>
+                <input
+                  type="text"
+                  value={returnPolicy}
+                  onChange={(e) => {
+                    setReturnPolicy(e.target.value);
+                    setHasUnsavedChanges(true);
+                  }}
+                  className="w-full text-xs bg-transparent border-0 font-medium text-slate-800 p-0 focus:ring-0 focus:outline-hidden"
+                />
+              </div>
+
+              <div className="p-3 rounded-xl border border-slate-200 bg-slate-50/60 space-y-1">
+                <span className="text-[10px] font-bold text-slate-500 uppercase">
+                  Shipping Terms
+                </span>
+                <input
+                  type="text"
+                  value={shippingPolicy}
+                  onChange={(e) => {
+                    setShippingPolicy(e.target.value);
+                    setHasUnsavedChanges(true);
+                  }}
+                  className="w-full text-xs bg-transparent border-0 font-medium text-slate-800 p-0 focus:ring-0 focus:outline-hidden"
+                />
+              </div>
+
+              <div className="p-3 rounded-xl border border-slate-200 bg-slate-50/60 space-y-1">
+                <span className="text-[10px] font-bold text-slate-500 uppercase">
+                  Warranty & Guarantee
+                </span>
+                <input
+                  type="text"
+                  value={warrantyPolicy}
+                  onChange={(e) => {
+                    setWarrantyPolicy(e.target.value);
+                    setHasUnsavedChanges(true);
+                  }}
+                  className="w-full text-xs bg-transparent border-0 font-medium text-slate-800 p-0 focus:ring-0 focus:outline-hidden"
+                />
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* SECTION 2: Tracked Competitors Manager */}
+      <div className="space-y-5">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <span className="flex h-6 w-6 items-center justify-center rounded-lg bg-indigo-50 border border-indigo-200 text-indigo-700 text-xs font-bold">
+              2
+            </span>
+            <h2 className="text-lg font-bold text-slate-900">
+              Tracked Competitors Manager
+            </h2>
+          </div>
+          <Button
+            type="button"
+            size="sm"
+            onClick={() => setIsAddCompOpen(true)}
+            className="text-xs font-semibold bg-slate-900 hover:bg-slate-800 text-white cursor-pointer"
+          >
+            <Plus className="w-3.5 h-3.5 mr-1" />
+            Add Competitor
+          </Button>
+        </div>
+
+        {/* Competitor Visual Cards Grid */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          {competitors.map((comp) => (
+            <div
+              key={comp.domain}
+              className="bg-white rounded-2xl border border-slate-200/80 p-4 shadow-2xs hover:shadow-xs transition-all space-y-3 relative group"
+            >
+              <div className="flex items-start justify-between gap-2">
+                <div className="flex items-center gap-2.5">
+                  <div className="w-9 h-9 rounded-xl bg-slate-100 border border-slate-200/80 flex items-center justify-center overflow-hidden shrink-0">
+                    <Favicon domain={comp.domain} size={18} fallbackText={comp.name} />
+                  </div>
+                  <div>
+                    <h3 className="text-xs font-bold text-slate-900 leading-snug">
+                      {comp.name}
+                    </h3>
+                    <span className="text-[10px] text-slate-400 font-mono">
+                      {comp.domain}
+                    </span>
+                  </div>
+                </div>
+
+                <button
+                  type="button"
+                  onClick={() => handleRemoveCompetitor(comp.domain)}
+                  className="p-1 rounded-md text-slate-300 hover:text-rose-600 hover:bg-rose-50 transition-colors opacity-0 group-hover:opacity-100 cursor-pointer"
+                  title="Remove competitor"
+                >
+                  <Trash2 className="w-3.5 h-3.5" />
+                </button>
+              </div>
+
+              <div className="flex items-center justify-between pt-2 border-t border-slate-100 text-[11px]">
+                <span className="text-slate-500 font-medium">{comp.tier}</span>
+                <span className="font-bold text-indigo-700 bg-indigo-50 border border-indigo-200 px-2 py-0.5 rounded-md font-mono">
+                  {comp.sov} SoV
                 </span>
               </div>
-              <TagInput
-                tags={exactUrls}
-                onChange={(newUrls) => {
-                  setExactUrls(newUrls);
-                  setHasUnsavedChanges(true);
-                }}
-                placeholder="e.g. rowing.gymshark.com, gymshark.co.uk, blog.gymshark.com..."
-                helperText="Citations matching these owned domains are marked as first-party brand citations in citation breakdown reports rather than third-party references."
-                badgeVariant="outline"
-              />
             </div>
-          </CardContent>
-        </Card>
+          ))}
+        </div>
+      </div>
 
-        {/* Section 2: Competitor Management */}
-        <Card>
-          <CardHeader>
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2 text-slate-900">
-                <Shield className="w-5 h-5 text-indigo-600" />
-                <CardTitle>Competitor Management & Benchmarking</CardTitle>
-              </div>
-              <span className="text-xs font-semibold px-2.5 py-1 rounded-full bg-slate-100 text-slate-700">
-                {competitors.length} Active {competitors.length === 1 ? "Competitor" : "Competitors"}
-              </span>
-            </div>
-            <CardDescription>
-              Add direct industry competitors. Our post-execution engine monitors their visibility across LLMs to calculate your competitive Share of Voice (SoV).
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <CompetitorListEditor
-              competitors={competitors}
-              onChange={(newComps) => {
-                setCompetitors(newComps);
-                setHasUnsavedChanges(true);
-              }}
-            />
-          </CardContent>
-        </Card>
+      {/* SECTION 3: AI Crawler & llms.txt Technical Health */}
+      <div className="space-y-5">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <span className="flex h-6 w-6 items-center justify-center rounded-lg bg-indigo-50 border border-indigo-200 text-indigo-700 text-xs font-bold">
+              3
+            </span>
+            <h2 className="text-lg font-bold text-slate-900">
+              AI Crawler & llms.txt Technical Health
+            </h2>
+          </div>
+        </div>
 
-        {/* Bottom Sticky Action Bar if changes pending */}
-        {hasUnsavedChanges && (
-          <div className="sticky bottom-6 z-20 p-4 rounded-2xl bg-slate-900 text-white shadow-2xl flex items-center justify-between animate-in fade-in slide-in-from-bottom-2">
-            <div className="flex items-center gap-2 text-xs">
-              <span className="w-2 h-2 rounded-full bg-amber-400 animate-pulse" />
-              <span>You have unsaved changes to this brand profile.</span>
-            </div>
+        {/* Live Crawler Status Table */}
+        <div className="bg-white rounded-2xl border border-slate-200/80 overflow-hidden shadow-2xs">
+          <div className="p-4 border-b border-slate-200/80 bg-slate-50/70 flex items-center justify-between">
             <div className="flex items-center gap-2">
+              <Bot className="w-4 h-4 text-slate-600" />
+              <h3 className="text-xs font-bold uppercase tracking-wider text-slate-800">
+                Robots.txt AI User-Agent Permissions
+              </h3>
+            </div>
+            <span className="text-[11px] text-emerald-700 font-semibold bg-emerald-50 px-2 py-0.5 rounded-md border border-emerald-200">
+              5 of 5 Allowed • 200 OK
+            </span>
+          </div>
+
+          <div className="overflow-x-auto">
+            <table className="w-full text-left text-xs">
+              <thead className="bg-slate-50/50 text-[10px] uppercase font-bold text-slate-400 border-b border-slate-100">
+                <tr>
+                  <th className="py-2.5 px-4">Bot Identifier</th>
+                  <th className="py-2.5 px-4">AI Search Engine</th>
+                  <th className="py-2.5 px-4">Robots Permission</th>
+                  <th className="py-2.5 px-4">Last Verified</th>
+                  <th className="py-2.5 px-4">User-Agent</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-slate-100">
+                {DEFAULT_CRAWLERS.map((c) => (
+                  <tr key={c.botName} className="hover:bg-slate-50/60 transition-colors">
+                    <td className="py-3 px-4 font-semibold text-slate-900">
+                      {c.botName}
+                    </td>
+                    <td className="py-3 px-4 text-slate-600">{c.engineOwner}</td>
+                    <td className="py-3 px-4">
+                      <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-emerald-700 bg-emerald-50 border border-emerald-200 px-2 py-0.5 rounded-full">
+                        <CheckCircle2 className="w-3 h-3 text-emerald-600" />
+                        <span>Allowed (200 OK)</span>
+                      </span>
+                    </td>
+                    <td className="py-3 px-4 text-slate-500 font-mono text-[11px]">
+                      {c.lastChecked}
+                    </td>
+                    <td className="py-3 px-4 text-slate-400 font-mono text-[10px] truncate max-w-[200px]">
+                      {c.userAgent}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        {/* llms.txt Standard Generator Card */}
+        <div className="bg-white rounded-2xl border border-slate-200/80 p-5 sm:p-6 shadow-2xs space-y-4">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 pb-3 border-b border-slate-100">
+            <div>
+              <h3 className="text-sm font-bold text-slate-900 flex items-center gap-1.5">
+                <FileCode className="w-4 h-4 text-indigo-600" />
+                <span>Standard /llms.txt Generator</span>
+              </h3>
+              <p className="text-xs text-slate-500 mt-0.5">
+                Host this file at <code className="bg-slate-100 px-1 py-0.5 rounded text-slate-800">https://{domain}/llms.txt</code> to guide LLM inference bots with deterministic brand facts.
+              </p>
+            </div>
+
+            <button
+              type="button"
+              onClick={handleCopyLlmsTxt}
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold text-white bg-slate-900 hover:bg-slate-800 shadow-2xs transition-colors shrink-0 cursor-pointer"
+            >
+              {copiedLlmsTxt ? (
+                <>
+                  <Check className="w-3.5 h-3.5 text-emerald-400" />
+                  <span className="text-emerald-400">Copied!</span>
+                </>
+              ) : (
+                <>
+                  <Copy className="w-3.5 h-3.5" />
+                  <span>Copy llms.txt</span>
+                </>
+              )}
+            </button>
+          </div>
+
+          <div className="bg-slate-900 rounded-xl p-4 text-slate-200 font-mono text-xs overflow-x-auto shadow-2xs border border-slate-800">
+            <pre className="leading-relaxed whitespace-pre font-mono">
+              {llmsTxtContent}
+            </pre>
+          </div>
+        </div>
+      </div>
+
+      {/* Add Competitor Modal */}
+      {isAddCompOpen && (
+        <div
+          className="fixed inset-0 z-50 bg-slate-900/40 backdrop-blur-xs flex items-center justify-center p-4 animate-in fade-in duration-200"
+          onClick={() => setIsAddCompOpen(false)}
+        >
+          <div
+            className="w-full max-w-md bg-white rounded-2xl shadow-2xl border border-slate-200 p-6 space-y-5 animate-in zoom-in-95 duration-200"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex items-center justify-between pb-3 border-b border-slate-100">
+              <h3 className="text-base font-bold text-slate-900">
+                Track New Competitor
+              </h3>
               <button
                 type="button"
-                onClick={handleResetForm}
-                className="px-3 py-1.5 rounded-lg text-xs font-medium text-slate-300 hover:text-white hover:bg-slate-800 transition-colors"
+                onClick={() => setIsAddCompOpen(false)}
+                className="p-1 rounded-lg text-slate-400 hover:text-slate-600"
               >
-                Discard
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            <div className="space-y-4">
+              <div className="space-y-1.5">
+                <Label htmlFor="cName" className="text-xs font-semibold text-slate-700">
+                  Competitor Name
+                </Label>
+                <Input
+                  id="cName"
+                  value={newCompName}
+                  onChange={(e) => setNewCompName(e.target.value)}
+                  placeholder="e.g. Under Armour, Nobull, Gym People"
+                  className="text-xs"
+                />
+              </div>
+
+              <div className="space-y-1.5">
+                <Label htmlFor="cDomain" className="text-xs font-semibold text-slate-700">
+                  Primary Domain
+                </Label>
+                <Input
+                  id="cDomain"
+                  value={newCompDomain}
+                  onChange={(e) => setNewCompDomain(e.target.value)}
+                  placeholder="e.g. underarmour.com"
+                  className="text-xs"
+                />
+              </div>
+            </div>
+
+            <div className="flex items-center justify-end gap-2 pt-2 border-t border-slate-100">
+              <button
+                type="button"
+                onClick={() => setIsAddCompOpen(false)}
+                className="px-3 py-1.5 rounded-xl text-xs font-medium text-slate-600 hover:bg-slate-100"
+              >
+                Cancel
               </button>
               <Button
                 type="button"
-                onClick={() => handleSaveChanges()}
-                disabled={isSaving}
-                className="text-xs font-semibold bg-white hover:bg-slate-100 text-slate-900 shadow-xs"
+                onClick={handleAddCompetitor}
+                className="text-xs font-semibold bg-slate-900 hover:bg-slate-800 text-white"
               >
-                {isSaving ? "Saving..." : "Save Changes"}
+                Track Competitor
               </Button>
             </div>
           </div>
-        )}
-      </form>
+        </div>
+      )}
     </div>
   );
 }

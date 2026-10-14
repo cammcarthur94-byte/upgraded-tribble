@@ -17,9 +17,11 @@ import { TopKpiRow } from "@/components/dashboard/top-kpi-row";
 import { DateRangePicker } from "@/components/ui/date-range-picker";
 import { EngineFavicon } from "@/components/ui/favicon";
 import { ArrowRight, AlertTriangle, X } from "lucide-react";
+import { useInspector } from "@/context/inspector-context";
 
 export default function BrandInsightsOverviewPage() {
   const { currentBrand } = useBrand();
+  const { openInspector } = useInspector();
   const { dateRange, dateRangeDays, setDateRange } = useGlobalFilters();
   const [data, setData] = useState<DashboardAnalyticsData | null>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -100,12 +102,18 @@ export default function BrandInsightsOverviewPage() {
             <div className="truncate">
               <span className="font-semibold text-amber-950">Algorithm Volatility Detected:</span>{" "}
               <span>Perplexity & ChatGPT model inclusion for <strong className="font-semibold">{currentBrand.brandName}</strong> fluctuated +4.8% this week.</span>
-              <Link
-                href="/reports/models"
-                className="ml-2 font-semibold underline underline-offset-2 hover:text-amber-950 inline-flex items-center gap-0.5"
+              <button
+                type="button"
+                onClick={() =>
+                  openInspector({
+                    queryText: "best squat proof leggings for gym",
+                    engine: "perplexity",
+                  })
+                }
+                className="ml-2 font-semibold underline underline-offset-2 hover:text-amber-950 inline-flex items-center gap-0.5 cursor-pointer"
               >
                 Inspect footprint <ArrowRight className="w-3 h-3 inline" />
-              </Link>
+              </button>
             </div>
           </div>
           <button

@@ -3,6 +3,8 @@
 import React, { ReactNode, useState, useEffect } from "react";
 import { Sidebar } from "./sidebar";
 import { useBrand } from "@/context/brand-context";
+import { InspectorProvider } from "@/context/inspector-context";
+import { RawLlmInspectorModal } from "@/components/prompts/raw-llm-inspector-modal";
 
 export function AppShell({ children }: { children: ReactNode }) {
   const { currentBrand, setCurrentBrand, brands } = useBrand();
@@ -41,30 +43,35 @@ export function AppShell({ children }: { children: ReactNode }) {
   };
 
   return (
-    <div className="min-h-screen bg-slate-50/50 flex">
-      {/* Fixed Collapsible Sidebar */}
-      <Sidebar
-        currentBrand={currentBrand}
-        onBrandChange={setCurrentBrand}
-        brands={brands}
-        isCollapsed={isCollapsed}
-        onToggleCollapse={handleToggleCollapse}
-      />
+    <InspectorProvider>
+      <div className="min-h-screen bg-slate-50/50 flex">
+        {/* Fixed Collapsible Sidebar */}
+        <Sidebar
+          currentBrand={currentBrand}
+          onBrandChange={setCurrentBrand}
+          brands={brands}
+          isCollapsed={isCollapsed}
+          onToggleCollapse={handleToggleCollapse}
+        />
 
-      {/* Main Content Area - Extends smoothly when sidebar is collapsed */}
-      <main
-        className={`flex-1 transition-all duration-300 ease-in-out min-h-screen min-w-0 w-full overflow-y-auto overflow-x-hidden ${
-          isCollapsed ? "ml-[72px]" : "ml-64"
-        }`}
-      >
-        <div
-          className={`mx-auto px-4 sm:px-6 lg:px-10 pb-12 pt-4 sm:pt-5 w-full min-w-0 transition-all duration-300 ease-in-out ${
-            isCollapsed ? "max-w-[1680px]" : "max-w-7xl"
+        {/* Main Content Area - Extends smoothly when sidebar is collapsed */}
+        <main
+          className={`flex-1 transition-all duration-300 ease-in-out min-h-screen min-w-0 w-full overflow-y-auto overflow-x-hidden ${
+            isCollapsed ? "ml-[72px]" : "ml-64"
           }`}
         >
-          {children}
-        </div>
-      </main>
-    </div>
+          <div
+            className={`mx-auto px-4 sm:px-6 lg:px-10 pb-12 pt-4 sm:pt-5 w-full min-w-0 transition-all duration-300 ease-in-out ${
+              isCollapsed ? "max-w-[1680px]" : "max-w-7xl"
+            }`}
+          >
+            {children}
+          </div>
+        </main>
+
+        {/* Global Raw LLM Response Inspector Modal */}
+        <RawLlmInspectorModal />
+      </div>
+    </InspectorProvider>
   );
 }

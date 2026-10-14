@@ -13,7 +13,9 @@ import {
   Copy,
   Check,
   Sparkles,
+  ArrowRight,
 } from "lucide-react";
+import { useInspector } from "@/context/inspector-context";
 
 interface SentimentDetailsSheetProps {
   isOpen: boolean;
@@ -30,6 +32,7 @@ export function SentimentDetailsSheet({
   snippets = [],
   brandName = "Gymshark",
 }: SentimentDetailsSheetProps) {
+  const { openInspector } = useInspector();
   const [selectedCategory, setSelectedCategory] = useState<
     "all" | "positive" | "neutral" | "negative"
   >(initialSentiment);
@@ -256,12 +259,28 @@ export function SentimentDetailsSheet({
                       </div>
                     )}
 
-                    {/* Date */}
-                    <div className="flex items-center gap-1.5 text-[10px] text-slate-400 pt-0.5">
-                      <Calendar className="w-3 h-3" />
-                      <span>
-                        Audited on {new Date(item.date).toLocaleDateString()}
-                      </span>
+                    {/* Date & Inspect Action */}
+                    <div className="flex items-center justify-between pt-1 border-t border-slate-100/80">
+                      <div className="flex items-center gap-1.5 text-[10px] text-slate-400">
+                        <Calendar className="w-3 h-3" />
+                        <span>
+                          Audited on {new Date(item.date).toLocaleDateString()}
+                        </span>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          onClose();
+                          openInspector({
+                            queryText: item.promptQuery,
+                            engine: item.engineName,
+                          });
+                        }}
+                        className="inline-flex items-center gap-1 text-[11px] font-semibold text-indigo-600 hover:text-indigo-800 transition-colors cursor-pointer"
+                      >
+                        <span>Inspect Full Output</span>
+                        <ArrowRight className="w-3 h-3" />
+                      </button>
                     </div>
                   </div>
                 );

@@ -20,6 +20,7 @@ import {
   ArrowRight,
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
+import { useInspector } from "@/context/inspector-context";
 
 interface EngineComparisonTableProps {
   engines: EngineInsightItem[];
@@ -30,6 +31,7 @@ export function EngineComparisonTable({
   engines,
   brandName,
 }: EngineComparisonTableProps) {
+  const { openInspector } = useInspector();
   const [expandedEngine, setExpandedEngine] = useState<string | null>(
     engines[0]?.engine || null
   );
@@ -216,11 +218,24 @@ export function EngineComparisonTable({
                                     <p className="text-[11px] text-slate-600 leading-relaxed italic">
                                       {fav.snippet}
                                     </p>
-                                    <div className="flex items-center gap-1.5 text-[10px] text-slate-400 mt-2">
-                                      <Clock className="w-3 h-3 text-slate-400" />
-                                      <span>
-                                        Audited {new Date(fav.timestamp).toLocaleDateString()}
-                                      </span>
+                                    <div className="flex items-center justify-between gap-1.5 text-[10px] text-slate-400 mt-2 pt-1.5 border-t border-slate-100">
+                                      <div className="flex items-center gap-1.5">
+                                        <Clock className="w-3 h-3 text-slate-400" />
+                                        <span>
+                                          Audited {new Date(fav.timestamp).toLocaleDateString()}
+                                        </span>
+                                      </div>
+                                      <button
+                                        type="button"
+                                        onClick={(e) => {
+                                          e.stopPropagation();
+                                          openInspector({ queryText: fav.query, engine: item.engine });
+                                        }}
+                                        className="inline-flex items-center gap-1 text-[11px] font-semibold text-emerald-700 hover:text-emerald-900 transition-colors cursor-pointer"
+                                      >
+                                        <span>Inspect</span>
+                                        <ArrowRight className="w-3 h-3" />
+                                      </button>
                                     </div>
                                   </div>
                                 ))}
@@ -301,17 +316,30 @@ export function EngineComparisonTable({
                                         </div>
                                       </div>
 
-                                      <button
-                                        type="button"
-                                        onClick={(e) => {
-                                          e.stopPropagation();
-                                          handleCreateGrowthTask(omit.query, item.displayName);
-                                        }}
-                                        className="inline-flex items-center gap-1 px-2.5 py-1 rounded-md text-[11px] font-semibold text-indigo-700 hover:text-indigo-800 bg-indigo-50 hover:bg-indigo-100 border border-indigo-200/80 transition-colors shrink-0 self-end sm:self-auto cursor-pointer shadow-2xs"
-                                      >
-                                        <span>+ Create Growth Task</span>
-                                        <ArrowRight className="w-3 h-3" />
-                                      </button>
+                                      <div className="flex items-center gap-2 self-end sm:self-auto">
+                                        <button
+                                          type="button"
+                                          onClick={(e) => {
+                                            e.stopPropagation();
+                                            openInspector({ queryText: omit.query, engine: item.engine });
+                                          }}
+                                          className="inline-flex items-center gap-1 px-2.5 py-1 rounded-md text-[11px] font-semibold text-slate-700 hover:text-slate-900 bg-white hover:bg-slate-100 border border-slate-200 transition-colors shrink-0 cursor-pointer shadow-2xs"
+                                        >
+                                          <span>Inspect</span>
+                                          <ArrowRight className="w-3 h-3 text-slate-400" />
+                                        </button>
+                                        <button
+                                          type="button"
+                                          onClick={(e) => {
+                                            e.stopPropagation();
+                                            handleCreateGrowthTask(omit.query, item.displayName);
+                                          }}
+                                          className="inline-flex items-center gap-1 px-2.5 py-1 rounded-md text-[11px] font-semibold text-indigo-700 hover:text-indigo-800 bg-indigo-50 hover:bg-indigo-100 border border-indigo-200/80 transition-colors shrink-0 cursor-pointer shadow-2xs"
+                                        >
+                                          <span>+ Create Growth Task</span>
+                                          <ArrowRight className="w-3 h-3" />
+                                        </button>
+                                      </div>
                                     </div>
                                   </div>
                                 ))}
