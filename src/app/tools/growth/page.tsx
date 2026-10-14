@@ -33,6 +33,8 @@ export default function GrowthOpportunitiesPage() {
   const [categoryFilter, setCategoryFilter] = useState<string>("all");
   const [engineFilter, setEngineFilter] = useState<string>("all");
   const [effortFilter, setEffortFilter] = useState<string>("all");
+  const [selectedTaskForDrawer, setSelectedTaskForDrawer] =
+    useState<GrowthTaskItem | null>(null);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
 
   const loadTasks = () => {
@@ -72,6 +74,19 @@ export default function GrowthOpportunitiesPage() {
             }
           : t
       )
+    );
+
+    setSelectedTaskForDrawer((prev) =>
+      prev && prev.id === taskId
+        ? {
+            ...prev,
+            status: newStatus,
+            implementedDate:
+              newStatus === "Implemented"
+                ? new Date().toISOString()
+                : prev.implementedDate,
+          }
+        : prev
     );
 
     const res = await updateTaskStatusAction(taskId, newStatus);
@@ -387,13 +402,28 @@ export default function GrowthOpportunitiesPage() {
             tasks={filteredTasks}
             onStatusChange={handleStatusChange}
             brandId={currentBrand.id}
+            selectedTask={selectedTaskForDrawer}
+            onSelectTask={setSelectedTaskForDrawer}
           />
         ) : (
-          <GrowthKanbanBoard
-            tasks={filteredTasks}
-            onStatusChange={handleStatusChange}
-            brandId={currentBrand.id}
-          />
+          <>
+            <GrowthKanbanBoard
+              tasks={filteredTasks}
+              onStatusChange={handleStatusChange}
+              brandId={currentBrand.id}
+              onSelectTask={setSelectedTaskForDrawer}
+            />
+            {selectedTaskForDrawer && (
+              <GrowthTaskTable
+                tasks={filteredTasks}
+                onStatusChange={handleStatusChange}
+                brandId={currentBrand.id}
+                selectedTask={selectedTaskForDrawer}
+                onSelectTask={setSelectedTaskForDrawer}
+                drawerOnly
+              />
+            )}
+          </>
         )}
       </div>
     </div>

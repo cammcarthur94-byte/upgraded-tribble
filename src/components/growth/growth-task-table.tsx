@@ -28,6 +28,9 @@ interface GrowthTaskTableProps {
   tasks: GrowthTaskItem[];
   onStatusChange: (taskId: string, newStatus: TaskStatus) => void;
   brandId: string;
+  selectedTask?: GrowthTaskItem | null;
+  onSelectTask?: (task: GrowthTaskItem | null) => void;
+  drawerOnly?: boolean;
 }
 
 interface TaskPlaybook {
@@ -278,9 +281,30 @@ export function GrowthTaskTable({
   tasks,
   onStatusChange,
   brandId,
+  selectedTask,
+  onSelectTask,
+  drawerOnly = false,
 }: GrowthTaskTableProps) {
-  const [selectedTaskForDrawer, setSelectedTaskForDrawer] =
+  const [internalSelectedTask, setInternalSelectedTask] =
     useState<GrowthTaskItem | null>(null);
+
+  const selectedTaskForDrawer =
+    selectedTask !== undefined ? selectedTask : internalSelectedTask;
+
+  const setSelectedTaskForDrawer = (
+    val:
+      | GrowthTaskItem
+      | null
+      | ((prev: GrowthTaskItem | null) => GrowthTaskItem | null)
+  ) => {
+    const nextVal =
+      typeof val === "function" ? val(selectedTaskForDrawer) : val;
+    if (onSelectTask) {
+      onSelectTask(nextVal);
+    } else {
+      setInternalSelectedTask(nextVal);
+    }
+  };
   const [completedSteps, setCompletedSteps] = useState<Record<string, boolean>>({});
   const [copiedSnippet, setCopiedSnippet] = useState(false);
 
@@ -342,8 +366,9 @@ export function GrowthTaskTable({
   return (
     <>
       {/* Linear-Style Card-Based Task Rows */}
-      <div className="space-y-2.5">
-        {sortedTasks.map((task) => {
+      {!drawerOnly && (
+        <div className="space-y-2.5">
+          {sortedTasks.map((task) => {
           const isImplemented = task.status === "Implemented";
           const isSelected = selectedTaskForDrawer?.id === task.id;
 
@@ -460,7 +485,8 @@ export function GrowthTaskTable({
             </div>
           );
         })}
-      </div>
+        </div>
+      )}
 
       {/* Right Slide-Out Preview Drawer */}
       {selectedTaskForDrawer && (() => {
