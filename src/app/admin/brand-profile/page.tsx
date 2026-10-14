@@ -10,6 +10,7 @@ import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { TagInput } from "@/components/brand/tag-input";
 import { Favicon, BrandFavicon } from "@/components/ui/favicon";
+import { usePlan } from "@/context/plan-context";
 import {
   Building2,
   Globe,
@@ -33,6 +34,7 @@ import {
   Sparkles,
   HelpCircle,
   X,
+  Lock,
 } from "lucide-react";
 
 interface CrawlerStatus {
@@ -89,6 +91,7 @@ const DEFAULT_CRAWLERS: CrawlerStatus[] = [
 
 export default function BrandProfilePage() {
   const { currentBrand, updateActiveBrand } = useBrand();
+  const { limits, canAddCompetitor, activePlan } = usePlan();
 
   // Form State
   const [brandName, setBrandName] = useState("Gymshark");
@@ -217,6 +220,14 @@ export default function BrandProfilePage() {
   };
 
   const handleAddCompetitor = () => {
+    if (!canAddCompetitor(competitors.length)) {
+      showToast(
+        `Competitor limit reached (${competitors.length}/${limits.maxCompetitors}) on ${activePlan.name}. Upgrade your plan to track more competitors.`,
+        "error"
+      );
+      return;
+    }
+
     if (!newCompName.trim() || !newCompDomain.trim()) {
       showToast("Please enter both competitor name and domain.", "error");
       return;
@@ -525,20 +536,62 @@ ${competitors.map((c) => `- ${c.name} (${c.domain})`).join("\n")}
             <span className="flex h-6 w-6 items-center justify-center rounded-lg bg-indigo-50 border border-indigo-200 text-indigo-700 text-xs font-bold">
               2
             </span>
-            <h2 className="text-lg font-bold text-slate-900">
-              Tracked Competitors Manager
-            </h2>
+            <div className="flex items-center gap-2">
+              <h2 className="text-lg font-bold text-slate-900">
+                Tracked Competitors Manager
+              </h2>
+              <span className="text-xs font-semibold px-2 py-0.5 rounded-full bg-slate-100 text-slate-700 font-mono">
+                {competitors.length} / {limits.maxCompetitors}
+              </span>
+            </div>
           </div>
           <Button
             type="button"
             size="sm"
-            onClick={() => setIsAddCompOpen(true)}
+            onClick={() => {
+              if (!canAddCompetitor(competitors.length)) {
+                showToast(
+                  `Competitor limit reached (${competitors.length}/${limits.maxCompetitors}) on ${activePlan.name}. Upgrade your plan to track more competitors.`,
+                  "error"
+                );
+                return;
+              }
+              setIsAddCompOpen(true);
+            }}
             className="text-xs font-semibold bg-slate-900 hover:bg-slate-800 text-white cursor-pointer"
           >
-            <Plus className="w-3.5 h-3.5 mr-1" />
+            {!canAddCompetitor(competitors.length) ? (
+              <Lock className="w-3.5 h-3.5 mr-1" />
+            ) : (
+              <Plus className="w-3.5 h-3.5 mr-1" />
+            )}
             Add Competitor
           </Button>
         </div>
+
+        {/* Competitor Limit Alert Banner */}
+        {!canAddCompetitor(competitors.length) && (
+          <div className="rounded-xl border border-amber-200 bg-amber-50/70 p-3.5 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 shadow-2xs">
+            <div className="flex items-center gap-2.5">
+              <div className="w-7 h-7 rounded-lg bg-amber-100 border border-amber-300 text-amber-800 flex items-center justify-center shrink-0">
+                <AlertTriangle className="w-3.5 h-3.5 text-amber-700" />
+              </div>
+              <div>
+                <p className="text-xs font-bold text-amber-900">
+                  Competitor Tracking Limit Reached ({competitors.length} / {limits.maxCompetitors})
+                </p>
+                <p className="text-[11px] text-amber-700">
+                  You are tracking the maximum number of competitors included in your {activePlan.name} plan. Upgrade to Pro or Scale to track more market competitors.
+                </p>
+              </div>
+            </div>
+            <Link href="/settings?tab=billing" className="shrink-0">
+              <Button size="sm" className="h-7 text-xs bg-slate-900 hover:bg-slate-800 text-white font-medium shadow-xs">
+                Upgrade Plan →
+              </Button>
+            </Link>
+          </div>
+        )}
 
         {/* Competitor Visual Cards Grid */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">

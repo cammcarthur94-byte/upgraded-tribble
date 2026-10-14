@@ -79,11 +79,17 @@ export function TeamWorkspaceTab({
           </div>
         </div>
 
-        <div className="shrink-0">
+        <div className="shrink-0 flex items-center gap-2.5">
+          {seatsUsed >= seatsMax && (
+            <span className="text-[11px] font-semibold text-amber-700 bg-amber-50 px-2 py-1 rounded-lg border border-amber-200">
+              Seat Limit Reached
+            </span>
+          )}
           <Button
             size="sm"
             onClick={onOpenInviteModal}
-            className="gap-1.5 h-9 px-4 text-xs bg-slate-900 hover:bg-slate-800 text-white font-medium shadow-xs"
+            disabled={seatsUsed >= seatsMax}
+            className="gap-1.5 h-9 px-4 text-xs bg-slate-900 hover:bg-slate-800 text-white font-medium shadow-xs disabled:opacity-40 disabled:cursor-not-allowed"
           >
             <UserPlus className="w-4 h-4" />
             + Invite Member

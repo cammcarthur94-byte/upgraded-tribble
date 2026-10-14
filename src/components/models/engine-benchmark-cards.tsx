@@ -1,8 +1,9 @@
-"use client";
-
 import React from "react";
+import Link from "next/link";
 import { EngineInsightItem } from "@/lib/scoring/modelInsights";
 import { EngineFavicon } from "@/components/ui/favicon";
+import { usePlan } from "@/context/plan-context";
+import { Button } from "@/components/ui/button";
 import {
   Trophy,
   AlertTriangle,
@@ -16,6 +17,7 @@ import {
   Smile,
   Hash,
   Globe,
+  Lock,
 } from "lucide-react";
 
 interface EngineBenchmarkCardsProps {
@@ -71,6 +73,8 @@ export function EngineBenchmarkCards({
   bestPlatform,
   attentionPlatform,
 }: EngineBenchmarkCardsProps) {
+  const { isEngineAllowed } = usePlan();
+
   // Engine visual configuration
   const getEngineStyles = (engine: string) => {
     switch (engine.toLowerCase()) {
@@ -120,6 +124,63 @@ export function EngineBenchmarkCards({
   return (
     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
       {engines.map((item) => {
+        const isAllowed = isEngineAllowed(item.engine);
+
+        if (!isAllowed) {
+          return (
+            <div
+              key={item.engine}
+              className="relative bg-slate-50/70 rounded-xl border border-dashed border-slate-300 p-4 shadow-2xs flex flex-col justify-between overflow-hidden"
+            >
+              <div>
+                <div className="flex items-start justify-between gap-2 mb-3">
+                  <div className="flex items-center gap-2.5 min-w-0">
+                    <div className="w-8 h-8 rounded-lg border border-slate-200/80 flex items-center justify-center shrink-0 p-1 bg-white opacity-60">
+                      <EngineFavicon engine={item.engine} size={20} />
+                    </div>
+                    <div className="min-w-0 truncate">
+                      <h3 className="text-sm font-semibold text-slate-700 leading-tight truncate">
+                        {item.displayName}
+                      </h3>
+                      <p className="text-[11px] text-slate-400 font-medium truncate mt-0.5">
+                        {getModelSubtitle(item.engine)}
+                      </p>
+                    </div>
+                  </div>
+                  <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-indigo-50 text-indigo-700 border border-indigo-200 shrink-0">
+                    <Lock className="w-2.5 h-2.5" />
+                    <span>PRO PLAN</span>
+                  </span>
+                </div>
+
+                <div className="my-6 text-center space-y-2">
+                  <div className="w-8 h-8 rounded-full bg-indigo-100/70 text-indigo-600 mx-auto flex items-center justify-center">
+                    <Lock className="w-4 h-4" />
+                  </div>
+                  <p className="text-xs font-semibold text-slate-800">
+                    {item.displayName} Locked
+                  </p>
+                  <p className="text-[11px] text-slate-500 max-w-[200px] mx-auto leading-relaxed">
+                    Included in Pro & Scale plans for multi-engine benchmarking.
+                  </p>
+                </div>
+              </div>
+
+              <div className="pt-3 border-t border-slate-200/60">
+                <Link href="/settings?tab=billing" className="block w-full">
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    className="w-full h-8 text-xs font-semibold bg-white hover:bg-slate-50 text-slate-800 border-slate-300 hover:border-slate-400 shadow-2xs"
+                  >
+                    Unlock Engine →
+                  </Button>
+                </Link>
+              </div>
+            </div>
+          );
+        }
+
         const styles = getEngineStyles(item.engine);
         const isBest = item.displayName === bestPlatform;
         const isAttention = item.displayName === attentionPlatform;

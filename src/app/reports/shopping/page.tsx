@@ -1,9 +1,13 @@
 "use client";
 
-import React, { useState, useEffect, useTransition, Suspense, useMemo } from "react";
+import React, { useState, useEffect, useMemo, useTransition, Suspense } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
+import Link from "next/link";
 import { useBrand } from "@/context/brand-context";
-import { ShoppingAnalyticsSummary } from "@/lib/types";
+import { usePlan } from "@/context/plan-context";
+import { PlanFeatureLock } from "@/components/ui/plan-feature-lock";
+import { Button } from "@/components/ui/button";
+import { ShoppingAnalyticsSummary, ShoppingProductCardItem, ShoppingPromptRow } from "@/lib/types";
 import {
   getProductVisibilityAnalyticsAction,
   extractProductsForPromptAction,
@@ -23,6 +27,7 @@ import {
   CheckCircle2,
   Search,
   Download,
+  Lock,
 } from "lucide-react";
 
 function ShoppingPageContent() {
@@ -31,6 +36,7 @@ function ShoppingPageContent() {
   const initialTab = (searchParams.get("tab") as ShoppingTabType) || "brands";
 
   const { currentBrand } = useBrand();
+  const { limits, activePlanId } = usePlan();
 
   // Primary State
   const [activeTab, setActiveTab] = useState<ShoppingTabType>(initialTab);
@@ -85,12 +91,15 @@ function ShoppingPageContent() {
 
   const handleExport = () => {
     if (!data) return;
+    const cardsToExport = !limits.hasFullAiShoppingSuite
+      ? data.productsView.productCards.slice(0, 10)
+      : data.productsView.productCards;
     const csvContent =
       "data:text/csv;charset=utf-8," +
       "Product Name,Brand,Category,Price,Rating,Occurrences\n" +
-      data.productsView.productCards
+      cardsToExport
         .map(
-          (p) =>
+          (p: ShoppingProductCardItem) =>
             `"${p.productName}","${p.brandName}","${p.category}","${p.price}",${p.rating},${p.occurrences}`
         )
         .join("\n");
@@ -101,7 +110,11 @@ function ShoppingPageContent() {
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
-    setNotification("Export downloaded successfully.");
+    setNotification(
+      !limits.hasFullAiShoppingSuite
+        ? "Export downloaded (Pro Plan: Top 10 products)."
+        : "Export downloaded successfully."
+    );
     setTimeout(() => setNotification(null), 3000);
   };
 
@@ -121,12 +134,12 @@ function ShoppingPageContent() {
   // Filtered Data for Active Views
   const filteredProducts = useMemo(() => {
     if (!data) return [];
-    let list = data.productsView.productCards;
+    let list: ShoppingProductCardItem[] = data.productsView.productCards;
 
     if (searchQuery.trim()) {
       const q = searchQuery.toLowerCase();
       list = list.filter(
-        (p) =>
+        (p: ShoppingProductCardItem) =>
           p.productName.toLowerCase().includes(q) ||
           p.brandName.toLowerCase().includes(q) ||
           p.category.toLowerCase().includes(q)
@@ -134,11 +147,11 @@ function ShoppingPageContent() {
     }
 
     if (selectedPlatform !== "all") {
-      list = list.filter((p) => p.engine === selectedPlatform);
+      list = list.filter((p: ShoppingProductCardItem) => p.engine === selectedPlatform);
     }
 
     if (selectedCategory !== "all") {
-      list = list.filter((p) =>
+      list = list.filter((p: ShoppingProductCardItem) =>
         p.category.toLowerCase().includes(selectedCategory.toLowerCase())
       );
     }
@@ -148,17 +161,17 @@ function ShoppingPageContent() {
 
   const filteredPrompts = useMemo(() => {
     if (!data) return [];
-    let list = data.promptsView.prompts;
+    let list: ShoppingPromptRow[] = data.promptsView.prompts;
 
     if (searchQuery.trim()) {
       const q = searchQuery.toLowerCase();
       list = list.filter(
-        (p) =>
+        (p: ShoppingPromptRow) =>
           p.promptText.toLowerCase().includes(q) ||
           p.topBrand.toLowerCase().includes(q) ||
           (p.products &&
             p.products.some(
-              (prod) =>
+              (prod: any) =>
                 prod.productName.toLowerCase().includes(q) ||
                 prod.brandName.toLowerCase().includes(q) ||
                 (prod.skuOrIdentifier &&
@@ -168,13 +181,42 @@ function ShoppingPageContent() {
     }
 
     if (selectedPlatform !== "all") {
-      list = list.filter((p) =>
-        p.engines.some((e) => e === selectedPlatform)
+      list = list.filter((p: ShoppingPromptRow) =>
+        p.engines.some((e: string) => e === selectedPlatform)
       );
     }
 
     return list;
   }, [data, searchQuery, selectedPlatform]);
+
+  if (!limits.hasAiShopping) {
+    return (
+      <div className="space-y-6 pb-16">
+        {/* Page Header */}
+        <div>
+          <h1 className="text-3xl font-bold tracking-tight text-slate-900">
+            AI Shopping
+          </h1>
+          <p className="text-sm text-slate-500 mt-1">
+            Benchmark product carousel dominance, competitor share of shelf, and model recommendation frequency for{" "}
+            <span className="font-semibold text-slate-700">{currentBrand.brandName}</span>.
+          </p>
+        </div>
+
+        <PlanFeatureLock
+          requiredPlan="pro"
+          featureName="AI Shopping Shelf & Product Carousel Intelligence"
+          description="AI Shopping tracking is available on Pro (Top 10 Products) and Scale plans (Full Carousel Suite). Upgrade your plan to track product visibility, merchant share of shelf, and AI recommendation rates across LLMs."
+          highlights={[
+            "Track brand recommendation frequency across ChatGPT, Perplexity & Claude shopping queries",
+            "Monitor competitor merchant share of shelf and product pricing carousels",
+            "Extract product recommendations and verbatim AI quotes in real time",
+            "Export CSV product rankings and analyze top merchant vendors",
+          ]}
+        />
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6 pb-16">
@@ -220,6 +262,30 @@ function ShoppingPageContent() {
           </button>
         </div>
       </div>
+
+      {/* Pro Plan Summary View Indicator Banner */}
+      {!limits.hasFullAiShoppingSuite && (
+        <div className="rounded-xl border border-indigo-200 bg-gradient-to-r from-indigo-50/80 via-purple-50/40 to-white p-3.5 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 shadow-2xs">
+          <div className="flex items-center gap-2.5">
+            <div className="w-7 h-7 rounded-lg bg-indigo-600 text-white flex items-center justify-center shrink-0">
+              <ShoppingBag className="w-3.5 h-3.5" />
+            </div>
+            <div>
+              <p className="text-xs font-semibold text-slate-900">
+                Pro Plan: AI Shopping Summary View (Top 10 Products)
+              </p>
+              <p className="text-[11px] text-slate-500">
+                Displaying your top 10 recommended products. Upgrade to Scale (Commerce) for unlimited SKU tracking, multi-region shelf analysis, and verified lift attribution.
+              </p>
+            </div>
+          </div>
+          <Link href="/settings?tab=billing" className="shrink-0">
+            <Button size="sm" className="h-7 text-xs bg-slate-900 hover:bg-slate-800 text-white font-medium shadow-xs">
+              Upgrade to Scale →
+            </Button>
+          </Link>
+        </div>
+      )}
 
       {/* Top Controls & Navigation Bar */}
       <ShoppingSubnavTabs
@@ -284,7 +350,11 @@ function ShoppingPageContent() {
           {activeTab === "products" && (
             <div className="space-y-6">
               <ProductsView
-                productCards={filteredProducts}
+                productCards={
+                  !limits.hasFullAiShoppingSuite
+                    ? filteredProducts.slice(0, 10)
+                    : filteredProducts
+                }
                 categories={data.productsView.categories}
                 onViewPrompt={(promptText) => {
                   setSearchQuery(promptText);
@@ -294,7 +364,11 @@ function ShoppingPageContent() {
 
               {/* Detailed Leaderboard with Verbatim AI Quotes Drawer */}
               <ProductLeaderboardTable
-                products={data.products}
+                products={
+                  !limits.hasFullAiShoppingSuite
+                    ? data.products.slice(0, 10)
+                    : data.products
+                }
                 currentBrandName={currentBrand.brandName}
                 onViewPrompt={(promptText) => {
                   setSearchQuery(promptText);

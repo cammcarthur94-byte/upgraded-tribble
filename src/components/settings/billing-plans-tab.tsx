@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useRef } from "react";
+import React, { useRef, useState } from "react";
 import Link from "next/link";
 import {
   CreditCard,
@@ -24,7 +24,17 @@ import {
 } from "lucide-react";
 import { Favicon } from "@/components/ui/favicon";
 import { Button } from "@/components/ui/button";
+import { usePlan } from "@/context/plan-context";
 import { BillingCycle, PlanId, PricingPlan, InvoiceItem } from "./types";
+
+const REGION_NAMES: Record<string, string> = {
+  US: "United States",
+  UK: "United Kingdom",
+  CA: "Canada",
+  AU: "Australia",
+  DE: "Germany",
+  FR: "France",
+};
 
 interface BillingPlansTabProps {
   billingCycle: BillingCycle;
@@ -65,9 +75,55 @@ export function BillingPlansTab({
   onShowToast,
 }: BillingPlansTabProps) {
   const pricingGridRef = useRef<HTMLDivElement>(null);
+  const [isHighlightingTiers, setIsHighlightingTiers] = useState(false);
+  const [isBurstModeActive, setIsBurstModeActive] = useState(false);
+  const [overageProtection, setOverageProtection] = useState(true);
+  const [quotaAlert, setQuotaAlert] = useState(true);
 
   const scrollToPricing = () => {
-    pricingGridRef.current?.scrollIntoView({ behavior: "smooth" });
+    if (pricingGridRef.current) {
+      pricingGridRef.current.scrollIntoView({ behavior: "smooth", block: "start" });
+      setIsHighlightingTiers(true);
+      setTimeout(() => {
+        setIsHighlightingTiers(false);
+      }, 2500);
+    }
+  };
+
+  const handleToggleBurstMode = () => {
+    setIsBurstModeActive((prev) => {
+      const next = !prev;
+      onShowToast(
+        next
+          ? "Launch & Drop Hourly Monitoring enabled (+$149/mo). Burst mode active for high-priority product launches!"
+          : "Hourly burst monitoring disabled."
+      );
+      return next;
+    });
+  };
+
+  const handleToggleOverageProtection = () => {
+    setOverageProtection((prev) => {
+      const next = !prev;
+      onShowToast(
+        next
+          ? "Overage Protection enabled: Auto-provisioning +25 prompt pack ($49) if monthly quota hits 100%."
+          : "Overage Protection paused."
+      );
+      return next;
+    });
+  };
+
+  const handleToggleQuotaAlert = () => {
+    setQuotaAlert((prev) => {
+      const next = !prev;
+      onShowToast(
+        next
+          ? "Quota Threshold Alert enabled: Dispatches email & Slack alert when consumption exceeds 80%."
+          : "Quota Threshold Alert paused."
+      );
+      return next;
+    });
   };
 
   const isAnnual = billingCycle === "annual";
@@ -217,9 +273,103 @@ export function BillingPlansTab({
     },
   ];
 
+  const { limits, effectiveLimits } = usePlan();
+
   // Current plan details
   const activePlan = pricingPlans.find((p) => p.id === activePlanId) || pricingPlans[2];
   const activePlanPrice = isAnnual ? activePlan.annualPrice : activePlan.monthlyPrice;
+
+  // Dynamic plan highlights
+  const planHighlights: Record<PlanId, string[]> = {
+    starter: [
+      "2 AI Engines (ChatGPT & Perplexity)",
+      "25 Tracked Prompts (Weekly Runs)",
+      "Top 20 Referring Domains",
+      "Up to 3 Competitors",
+    ],
+    pro: [
+      "All 4 AI Engines (Daily & Weekly Runs)",
+      "100 Tracked Prompts (25 Daily + 75 Weekly)",
+      "AI Shopping Summary View (Top 10 Products)",
+      "Full Task Tracker & AI Schema Generator",
+    ],
+    scale: [
+      "All 4 AI Engines (100% Daily Execution)",
+      "Full AI Shopping Suite (Unlimited SKUs)",
+      "Verified Lift Tracking & Attribution",
+      "Multi-Region Geo Tracking (2 Regions: US + UK)",
+    ],
+    enterprise: [
+      "All AI Engines + Custom LLM Endpoint Testing",
+      "1,000+ Real-Time & Hourly Prompts",
+      "Unlimited Competitors & Global Geo Regions",
+      "SSO / SAML & Dedicated GEO Strategist",
+    ],
+  };
+
+  const currentHighlights = planHighlights[activePlanId] || planHighlights.scale;
+
+  // Dynamic telemetry calculations
+  const maxPrompts = effectiveLimits.maxPrompts;
+  const promptsUsed = Math.min(25, maxPrompts);
+  const promptsPercent = ((promptsUsed / maxPrompts) * 100).toFixed(1);
+  const promptsRemaining = Math.max(0, maxPrompts - promptsUsed);
+  const promptsScheduleText =
+    activePlanId === "starter"
+      ? "Scheduled: Weekly execution only"
+      : activePlanId === "pro"
+      ? "Scheduled: 25 Daily + 75 Weekly execution"
+      : activePlanId === "enterprise"
+      ? "Scheduled: Real-Time & Hourly execution"
+      : "Scheduled: 100% Daily execution";
+
+  const runsConfig = {
+    starter: {
+      used: 175,
+      max: 500,
+      pct: "35.0%",
+      sub: "100 scheduled weekly runs + 75 discovery scans • Resets Nov 1, 2026",
+      status: "Healthy pacing",
+    },
+    pro: {
+      used: 1820,
+      max: 6000,
+      pct: "30.3%",
+      sub: "700 scheduled daily/weekly runs + 1,120 discovery scans • Resets Nov 1, 2026",
+      status: "Healthy pacing",
+    },
+    scale: {
+      used: 3750,
+      max: 36000,
+      pct: "10.4%",
+      sub: "1,400 scheduled daily runs + 2,350 on-demand & discovery scans • Resets Nov 1, 2026",
+      status: "Healthy pacing",
+    },
+    enterprise: {
+      used: 18400,
+      max: 120000,
+      pct: "15.3%",
+      sub: "8,400 high-frequency runs + 10,000 burst scans • Resets Nov 1, 2026",
+      status: "Enterprise burst",
+    },
+  }[activePlanId] || {
+    used: 3750,
+    max: 36000,
+    pct: "10.4%",
+    sub: "1,400 scheduled daily runs + 2,350 on-demand & discovery scans • Resets Nov 1, 2026",
+    status: "Healthy pacing",
+  };
+
+  const maxCompetitors = limits.maxCompetitors;
+  const competitorsUsed = 4;
+  const isCompetitorsOverLimit = competitorsUsed > maxCompetitors;
+  const compPercent = Math.min(100, Math.round((competitorsUsed / maxCompetitors) * 100));
+  const compSlotsAvailable = Math.max(0, maxCompetitors - competitorsUsed);
+
+  const maxWorkspaces = effectiveLimits.maxWorkspaces;
+  const workspacesUsed = 1 + extraWorkspaces;
+  const wsPercent = Math.min(100, Math.round((workspacesUsed / maxWorkspaces) * 100));
+  const wsSlotsAvailable = Math.max(0, maxWorkspaces - workspacesUsed);
 
   return (
     <div className="space-y-8">
@@ -240,7 +390,7 @@ export function BillingPlansTab({
                 ACTIVE PLAN
               </span>
               <span className="text-xs text-slate-500 font-medium">
-                Renews Nov 14, 2026
+                Renews Nov 1, 2026
               </span>
             </div>
 
@@ -289,22 +439,12 @@ export function BillingPlansTab({
                 Included Plan Highlights
               </div>
               <ul className="space-y-1.5 text-xs text-slate-700">
-                <li className="flex items-center gap-2">
-                  <Check className="w-3.5 h-3.5 text-emerald-600 shrink-0 font-bold" />
-                  <span>All 4 AI Engines (Daily Runs)</span>
-                </li>
-                <li className="flex items-center gap-2">
-                  <Check className="w-3.5 h-3.5 text-emerald-600 shrink-0 font-bold" />
-                  <span>Full AI Shopping Suite</span>
-                </li>
-                <li className="flex items-center gap-2">
-                  <Check className="w-3.5 h-3.5 text-emerald-600 shrink-0 font-bold" />
-                  <span>Verified Lift Tracking</span>
-                </li>
-                <li className="flex items-center gap-2">
-                  <Check className="w-3.5 h-3.5 text-emerald-600 shrink-0 font-bold" />
-                  <span>Multi-Region Geo Tracking (2 Regions: US + UK)</span>
-                </li>
+                {currentHighlights.map((hl, i) => (
+                  <li key={i} className="flex items-center gap-2">
+                    <Check className="w-3.5 h-3.5 text-emerald-600 shrink-0 font-bold" />
+                    <span>{hl}</span>
+                  </li>
+                ))}
               </ul>
             </div>
           </div>
@@ -313,13 +453,13 @@ export function BillingPlansTab({
           <div className="mt-6 pt-5 border-t border-slate-100 flex items-center gap-3">
             <Button
               onClick={scrollToPricing}
-              className="bg-slate-900 hover:bg-slate-800 text-white text-xs h-9 px-4 rounded-xl shadow-xs font-medium"
+              className="bg-slate-900 hover:bg-slate-800 text-white text-xs h-9 px-4 rounded-xl shadow-xs font-medium cursor-pointer"
             >
               Change Plan
             </Button>
             <button
               onClick={onOpenPaymentModal}
-              className="text-xs font-medium text-slate-700 hover:text-slate-900 hover:underline px-2 py-1.5"
+              className="text-xs font-medium text-slate-700 hover:text-slate-900 hover:underline px-2 py-1.5 cursor-pointer"
             >
               Update Payment Method
             </button>
@@ -335,11 +475,11 @@ export function BillingPlansTab({
                   Monthly Quota & Credit Consumption
                 </h3>
                 <p className="text-xs text-slate-500 mt-0.5">
-                  Live telemetry synchronized with current billing period (Oct 14 – Nov 14, 2026)
+                  Live telemetry synchronized with current billing period (Oct 1 – Oct 30, 2026)
                 </p>
               </div>
-              <span className="text-[11px] font-medium text-slate-500 bg-slate-100 px-2.5 py-1 rounded-lg">
-                Cycle: Day 1 of 31
+              <span className="text-[11px] font-medium text-slate-600 bg-slate-100 px-2.5 py-1 rounded-lg">
+                Cycle: Day 14 of 30 (Oct 1 – Oct 30, 2026)
               </span>
             </div>
 
@@ -351,12 +491,12 @@ export function BillingPlansTab({
                   <div className="flex items-center gap-2">
                     <span className="font-semibold text-slate-900">Tracked Prompts</span>
                     <span className="text-[11px] text-slate-500 font-mono">
-                      25 / {300 + extraPromptPacks * 25} Prompts Used
+                      {promptsUsed} / {maxPrompts} Prompts Used
                     </span>
                   </div>
                   <div className="flex items-center gap-2">
                     <span className="text-xs font-semibold font-mono text-emerald-600">
-                      8.3%
+                      {promptsPercent}%
                     </span>
                     <Link
                       href="/tools/prompts"
@@ -369,12 +509,16 @@ export function BillingPlansTab({
                 <div className="w-full h-2 rounded-full bg-slate-100 overflow-hidden">
                   <div
                     className="h-full bg-emerald-500 rounded-full transition-all duration-500"
-                    style={{ width: "8.3%" }}
+                    style={{ width: `${promptsPercent}%` }}
                   />
                 </div>
                 <div className="text-[11px] text-slate-400 flex justify-between">
-                  <span>275 prompts remaining in active monthly tier</span>
-                  <span className="text-slate-500">Scheduled: 100% Daily execution</span>
+                  <span>
+                    {promptsRemaining > 0
+                      ? `${promptsRemaining} prompts remaining in active monthly tier`
+                      : "0 prompts remaining — monthly tier quota full"}
+                  </span>
+                  <span className="text-slate-500">{promptsScheduleText}</span>
                 </div>
               </div>
 
@@ -386,26 +530,26 @@ export function BillingPlansTab({
                       Monthly Engine Executions (Runs)
                     </span>
                     <span className="text-[11px] text-slate-500 font-mono">
-                      3,750 / 36,000 Runs
+                      {runsConfig.used.toLocaleString()} / {runsConfig.max.toLocaleString()} Runs
                     </span>
                   </div>
                   <div className="flex items-center gap-2">
                     <span className="text-xs font-semibold font-mono text-indigo-600">
-                      10.4%
+                      {runsConfig.pct}
                     </span>
                     <span className="text-[10px] font-semibold text-indigo-700 bg-indigo-50 border border-indigo-200/80 px-1.5 py-0.5 rounded">
-                      Healthy pacing
+                      {runsConfig.status}
                     </span>
                   </div>
                 </div>
                 <div className="w-full h-2 rounded-full bg-slate-100 overflow-hidden">
                   <div
                     className="h-full bg-indigo-500 rounded-full transition-all duration-500"
-                    style={{ width: "10.4%" }}
+                    style={{ width: runsConfig.pct }}
                   />
                 </div>
                 <div className="text-[11px] text-slate-500">
-                  25 prompts × 4 engines × Daily run schedule • Resets Nov 14, 2026
+                  {runsConfig.sub}
                 </div>
               </div>
 
@@ -415,17 +559,24 @@ export function BillingPlansTab({
                   <div className="flex items-center gap-2">
                     <span className="font-semibold text-slate-900">Tracked Competitors</span>
                     <span className="text-[11px] text-slate-500 font-mono">
-                      4 / 10 Competitors
+                      {competitorsUsed} / {maxCompetitors} Competitors
                     </span>
                   </div>
-                  <span className="text-xs font-semibold font-mono text-slate-700">
-                    40.0%
-                  </span>
+                  <div className="flex items-center gap-2">
+                    <span className={`text-xs font-semibold font-mono ${isCompetitorsOverLimit ? "text-rose-600" : "text-slate-700"}`}>
+                      {compPercent}%
+                    </span>
+                    {isCompetitorsOverLimit && (
+                      <span className="text-[10px] font-semibold text-rose-700 bg-rose-50 border border-rose-200 px-1.5 py-0.5 rounded">
+                        Over quota (max {maxCompetitors})
+                      </span>
+                    )}
+                  </div>
                 </div>
                 <div className="w-full h-2 rounded-full bg-slate-100 overflow-hidden">
                   <div
-                    className="h-full bg-slate-700 rounded-full transition-all duration-500"
-                    style={{ width: "40%" }}
+                    className={`h-full rounded-full transition-all duration-500 ${isCompetitorsOverLimit ? "bg-rose-500" : "bg-slate-700"}`}
+                    style={{ width: `${compPercent}%` }}
                   />
                 </div>
                 <div className="flex items-center justify-between text-[11px]">
@@ -447,7 +598,11 @@ export function BillingPlansTab({
                       Vuori
                     </span>
                   </div>
-                  <span className="text-slate-400">6 slots available</span>
+                  <span className={isCompetitorsOverLimit ? "text-rose-600 font-medium" : "text-slate-400"}>
+                    {isCompetitorsOverLimit
+                      ? `Plan limit exceeded (${maxCompetitors} max)`
+                      : `${compSlotsAvailable} slots available`}
+                  </span>
                 </div>
               </div>
 
@@ -457,17 +612,17 @@ export function BillingPlansTab({
                   <div className="flex items-center gap-2">
                     <span className="font-semibold text-slate-900">Brand Workspaces</span>
                     <span className="text-[11px] text-slate-500 font-mono">
-                      {1 + extraWorkspaces} / {3 + extraWorkspaces} Workspaces
+                      {workspacesUsed} / {maxWorkspaces} Workspaces
                     </span>
                   </div>
                   <span className="text-xs font-semibold font-mono text-slate-700">
-                    33.3%
+                    {wsPercent}%
                   </span>
                 </div>
                 <div className="w-full h-2 rounded-full bg-slate-100 overflow-hidden">
                   <div
                     className="h-full bg-emerald-600 rounded-full transition-all duration-500"
-                    style={{ width: "33.3%" }}
+                    style={{ width: `${wsPercent}%` }}
                   />
                 </div>
                 <div className="flex items-center justify-between text-[11px]">
@@ -475,12 +630,18 @@ export function BillingPlansTab({
                     <span className="w-2 h-2 rounded-full bg-emerald-500"></span>
                     gymshark.com (Primary)
                   </span>
-                  <button
-                    onClick={onOpenAddWorkspaceModal}
-                    className="text-indigo-600 hover:text-indigo-700 hover:underline font-medium text-[11px]"
-                  >
-                    + Provision Sister Brand
-                  </button>
+                  {wsSlotsAvailable > 0 ? (
+                    <button
+                      onClick={onOpenAddWorkspaceModal}
+                      className="text-indigo-600 hover:text-indigo-700 hover:underline font-medium text-[11px] cursor-pointer"
+                    >
+                      + Provision Sister Brand ({wsSlotsAvailable} left)
+                    </button>
+                  ) : (
+                    <span className="text-slate-400">
+                      Tier limit reached ({maxWorkspaces} max)
+                    </span>
+                  )}
                 </div>
               </div>
             </div>
@@ -489,12 +650,26 @@ export function BillingPlansTab({
       </div>
 
       {/* SECTION 2: Interactive 4-Tier Pricing Comparison Grid */}
-      <div ref={pricingGridRef} className="space-y-5 pt-2">
+      <div
+        ref={pricingGridRef}
+        className={`space-y-5 pt-2 transition-all duration-500 rounded-2xl ${
+          isHighlightingTiers
+            ? "ring-2 ring-indigo-500/80 bg-indigo-50/20 p-4 -m-4 shadow-lg shadow-indigo-500/10"
+            : ""
+        }`}
+      >
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div>
-            <h2 className="text-lg sm:text-xl font-bold tracking-tight text-slate-900">
-              Subscription Tiers
-            </h2>
+            <div className="flex items-center gap-2.5">
+              <h2 className="text-lg sm:text-xl font-bold tracking-tight text-slate-900">
+                Subscription Tiers
+              </h2>
+              {isHighlightingTiers && (
+                <span className="animate-pulse inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-indigo-100 text-indigo-800 border border-indigo-200">
+                  Select a tier below
+                </span>
+              )}
+            </div>
             <p className="text-xs text-slate-500 mt-0.5">
               Choose the right plan to expand generative engine visibility, shopping shelf dominance, and brand intelligence.
             </p>
@@ -692,13 +867,13 @@ export function BillingPlansTab({
             <div className="mt-5 pt-4 border-t border-slate-100 flex items-center justify-between">
               <span className="text-[11px] text-slate-400">Instant quota sync</span>
               <Button
-                variant={extraPromptPacks > 0 ? "outline" : "default"}
+                variant="outline"
                 size="sm"
                 onClick={onTogglePromptPack}
-                className={`h-8 text-xs ${
+                className={`h-8 text-xs font-semibold rounded-lg transition-all shadow-2xs cursor-pointer ${
                   extraPromptPacks > 0
-                    ? "border-emerald-300 text-emerald-800 bg-emerald-50/50"
-                    : "bg-slate-900 text-white hover:bg-slate-800"
+                    ? "border-emerald-300 bg-emerald-50 text-emerald-800 hover:bg-emerald-100"
+                    : "border-slate-200 bg-white hover:bg-slate-900 hover:text-white hover:border-slate-900 text-slate-800"
                 }`}
               >
                 {extraPromptPacks > 0 ? "Manage Pack (+25)" : "+ Add Pack"}
@@ -721,17 +896,28 @@ export function BillingPlansTab({
                 Global Geo-Location Pack
               </h3>
               <p className="text-xs text-slate-500 mt-1 leading-relaxed">
-                Track regional LLM answers & shopping carousels in 🇬🇧 UK, 🇨🇦 CA, 🇦🇺 AU, 🇩🇪 DE, or 🇫🇷 FR.
+                Track regional LLM answers & shopping carousels in the UK, Canada, Australia, Germany, or France.
               </p>
-              <div className="mt-2 flex items-center gap-1.5 flex-wrap">
+              <div className="mt-2.5 flex items-center gap-1.5 flex-wrap">
                 {activeRegions.map((r) => (
                   <span
                     key={r}
-                    className="text-[11px] font-semibold text-slate-700 bg-slate-100 px-2 py-0.5 rounded border border-slate-200/60"
+                    className="inline-flex items-center gap-1.5 px-2 py-1 rounded-md bg-slate-100/90 border border-slate-200/80 text-xs text-slate-800 font-medium shadow-2xs"
                   >
-                    {r === "US" ? "🇺🇸 US" : r === "UK" ? "🇬🇧 UK" : r === "CA" ? "🇨🇦 CA" : r === "AU" ? "🇦🇺 AU" : r === "DE" ? "🇩🇪 DE" : "🇫🇷 FR"}
+                    <span className="text-[10px] font-bold font-mono px-1.5 py-0.5 rounded bg-slate-200 text-slate-700 leading-none">
+                      {r}
+                    </span>
+                    <span>{REGION_NAMES[r] || r}</span>
                   </span>
                 ))}
+                <button
+                  type="button"
+                  onClick={onOpenAddRegionModal}
+                  className="inline-flex items-center gap-1 px-2 py-1 rounded-md border border-dashed border-slate-300 text-xs text-indigo-600 hover:text-indigo-700 hover:border-indigo-300 hover:bg-indigo-50/50 transition-colors font-medium cursor-pointer"
+                >
+                  <Plus className="w-3 h-3" />
+                  <span>Add Region</span>
+                </button>
               </div>
             </div>
 
@@ -743,47 +929,147 @@ export function BillingPlansTab({
                 variant="outline"
                 size="sm"
                 onClick={onOpenAddRegionModal}
-                className="h-8 text-xs border-slate-200 hover:bg-slate-50 text-slate-800"
+                className="h-8 text-xs font-semibold rounded-lg border-slate-200 bg-white hover:bg-slate-900 hover:text-white hover:border-slate-900 text-slate-800 transition-all shadow-2xs cursor-pointer"
               >
                 + Add Region
               </Button>
             </div>
           </div>
 
-          {/* Add-on 3: Additional Brand Workspace */}
+          {/* Add-on 3: Launch & Drop Hourly Monitoring */}
           <div className="p-5 rounded-2xl border border-slate-200/80 bg-white shadow-xs flex flex-col justify-between hover:border-slate-300 transition-all">
             <div>
               <div className="flex items-center justify-between">
                 <span className="w-8 h-8 rounded-lg bg-purple-50 border border-purple-200/80 flex items-center justify-center text-purple-600">
-                  <Layers className="w-4 h-4" />
+                  <Clock className="w-4 h-4" />
                 </span>
                 <span className="text-xs font-bold text-slate-900 font-mono">
                   +$149 / mo
                 </span>
               </div>
               <h3 className="font-bold text-sm text-slate-900 mt-3">
-                Additional Brand Workspace
+                Launch & Drop Hourly Monitoring
               </h3>
               <p className="text-xs text-slate-500 mt-1 leading-relaxed">
-                Add an extra domain or sister brand with isolated competitor & citation tracking.
+                Upgrade selected high-priority prompts from Daily to Hourly execution during major product launches or seasonal sales.
               </p>
-              <div className="mt-2 text-[11px] text-slate-500 font-medium">
-                Active: gymshark.com ({1 + extraWorkspaces} of {3 + extraWorkspaces} in use)
+              <div className="mt-2.5 text-[11px] font-medium">
+                {isBurstModeActive ? (
+                  <span className="inline-flex items-center gap-1 text-emerald-700 bg-emerald-50 border border-emerald-200/80 px-2 py-0.5 rounded">
+                    <Check className="w-3 h-3 text-emerald-600" />
+                    Active: 24× Hourly Burst Tracking
+                  </span>
+                ) : (
+                  <span className="text-slate-400">
+                    Ideal for Black Friday, product drops & press releases
+                  </span>
+                )}
               </div>
             </div>
 
             <div className="mt-5 pt-4 border-t border-slate-100 flex items-center justify-between">
-              <span className="text-[11px] text-slate-400">Multi-domain isolation</span>
+              <span className="text-[11px] text-slate-400">On-demand burst mode</span>
               <Button
                 variant="outline"
                 size="sm"
-                onClick={onOpenAddWorkspaceModal}
-                className="h-8 text-xs border-slate-200 hover:bg-slate-50 text-slate-800"
+                onClick={handleToggleBurstMode}
+                className={`h-8 text-xs font-semibold rounded-lg transition-all shadow-2xs cursor-pointer ${
+                  isBurstModeActive
+                    ? "border-emerald-300 bg-emerald-50 text-emerald-800 hover:bg-emerald-100"
+                    : "border-slate-200 bg-white hover:bg-slate-900 hover:text-white hover:border-slate-900 text-slate-800"
+                }`}
               >
-                + Add Workspace
+                {isBurstModeActive ? "Burst Mode Active ✓" : "+ Enable Burst Mode"}
               </Button>
             </div>
           </div>
+        </div>
+      </div>
+
+      {/* SECTION: Spend Guardrails & Overage Protection Bar */}
+      <div className="bg-slate-50/70 border border-slate-200 rounded-xl p-4 flex flex-col md:flex-row md:items-center justify-between gap-4 md:gap-6 shadow-2xs">
+        {/* Toggle 1: Overage Protection */}
+        <div className="flex items-center justify-between sm:justify-start gap-3 flex-1">
+          <div className="w-8 h-8 rounded-lg bg-emerald-50 border border-emerald-200/80 flex items-center justify-center text-emerald-600 shrink-0">
+            <ShieldCheck className="w-4 h-4" />
+          </div>
+          <div className="min-w-0 pr-2">
+            <div className="flex items-center gap-2">
+              <span className="font-semibold text-xs text-slate-900">
+                Overage Protection
+              </span>
+              <span
+                className={`text-[10px] font-bold px-1.5 py-0.5 rounded tracking-wide ${
+                  overageProtection
+                    ? "bg-emerald-100 text-emerald-800"
+                    : "bg-slate-200 text-slate-600"
+                }`}
+              >
+                {overageProtection ? "Active" : "Paused"}
+              </span>
+            </div>
+            <p className="text-[11px] text-slate-500 mt-0.5 leading-relaxed">
+              Auto-provision +25 Prompt Pack ($49) if monthly run quota hits 100% so tracking never pauses.
+            </p>
+          </div>
+          <button
+            type="button"
+            role="switch"
+            aria-checked={overageProtection}
+            onClick={handleToggleOverageProtection}
+            className={`w-11 h-6 flex items-center rounded-full p-1 transition-colors shrink-0 cursor-pointer ${
+              overageProtection ? "bg-emerald-500" : "bg-slate-300"
+            }`}
+          >
+            <div
+              className={`bg-white w-4 h-4 rounded-full shadow-md transform transition-transform ${
+                overageProtection ? "translate-x-5" : "translate-x-0"
+              }`}
+            />
+          </button>
+        </div>
+
+        <div className="hidden md:block w-px h-10 bg-slate-200/80" />
+
+        {/* Toggle 2: Quota Threshold Alert */}
+        <div className="flex items-center justify-between sm:justify-start gap-3 flex-1">
+          <div className="w-8 h-8 rounded-lg bg-indigo-50 border border-indigo-200/80 flex items-center justify-center text-indigo-600 shrink-0">
+            <AlertCircle className="w-4 h-4" />
+          </div>
+          <div className="min-w-0 pr-2">
+            <div className="flex items-center gap-2">
+              <span className="font-semibold text-xs text-slate-900">
+                Quota Threshold Alert
+              </span>
+              <span
+                className={`text-[10px] font-bold px-1.5 py-0.5 rounded tracking-wide ${
+                  quotaAlert
+                    ? "bg-indigo-100 text-indigo-800"
+                    : "bg-slate-200 text-slate-600"
+                }`}
+              >
+                {quotaAlert ? "Active" : "Paused"}
+              </span>
+            </div>
+            <p className="text-[11px] text-slate-500 mt-0.5 leading-relaxed">
+              Send email & Slack alert when monthly credit consumption exceeds 80%.
+            </p>
+          </div>
+          <button
+            type="button"
+            role="switch"
+            aria-checked={quotaAlert}
+            onClick={handleToggleQuotaAlert}
+            className={`w-11 h-6 flex items-center rounded-full p-1 transition-colors shrink-0 cursor-pointer ${
+              quotaAlert ? "bg-emerald-500" : "bg-slate-300"
+            }`}
+          >
+            <div
+              className={`bg-white w-4 h-4 rounded-full shadow-md transform transition-transform ${
+                quotaAlert ? "translate-x-5" : "translate-x-0"
+              }`}
+            />
+          </button>
         </div>
       </div>
 

@@ -45,13 +45,17 @@ import {
   Sparkles,
   ListFilter,
   RefreshCw,
+  Lock,
 } from "lucide-react";
 import { PromptDiscoveryInbox } from "@/components/growth/prompt-discovery-inbox";
 import { getPromptOpportunitiesAction } from "@/app/actions/minePromptOpportunities";
 import { PromptOpportunity } from "@/lib/types";
+import { usePlan } from "@/context/plan-context";
+import { Button } from "@/components/ui/button";
 
 export default function PromptManagementPage() {
   const { currentBrand } = useBrand();
+  const { limits, effectiveLimits, canAddPrompt, activePlan, activePlanId } = usePlan();
 
   // Prompt state
   const [prompts, setPrompts] = useState<PromptItem[]>(INITIAL_PROMPTS);
@@ -107,6 +111,12 @@ export default function PromptManagementPage() {
   };
 
   const handleBatchExport = () => {
+    if (!limits.hasCsvExport) {
+      showToast(
+        `CSV export requires Pro Plan or higher (current: ${activePlan.name}). Upgrade in Billing.`
+      );
+      return;
+    }
     const selected = prompts.filter((p) => selectedPromptIds.includes(p.id));
     const csvContent =
       "data:text/csv;charset=utf-8," +
@@ -164,6 +174,13 @@ export default function PromptManagementPage() {
   }, [currentBrand.id]);
 
   const handlePromptTracked = (promptText: string) => {
+    if (!canAddPrompt(prompts.length)) {
+      showToast(
+        `Prompt limit reached (${prompts.length}/${effectiveLimits.maxPrompts}) on ${activePlan.name}. Upgrade to track more prompts.`
+      );
+      return;
+    }
+
     // Add newly tracked prompt to active prompts state optimistically
     const existing = prompts.find(
       (p) => p.brandId === currentBrand.id && p.queryText.toLowerCase() === promptText.toLowerCase()
@@ -369,8 +386,13 @@ export default function PromptManagementPage() {
             : p
         )
       );
-      showToast("Prompt successfully updated.");
     } else {
+      if (!canAddPrompt(prompts.length)) {
+        showToast(
+          `Prompt limit reached (${prompts.length}/${effectiveLimits.maxPrompts}) on ${activePlan.name}. Upgrade to track more prompts.`
+        );
+        return;
+      }
       const res = await createPromptAction({
         brandId: currentBrand.id,
         ...data,
@@ -479,6 +501,12 @@ export default function PromptManagementPage() {
           <button
             type="button"
             onClick={() => {
+              if (!canAddPrompt(prompts.length)) {
+                showToast(
+                  `Prompt limit reached (${prompts.length}/${effectiveLimits.maxPrompts}) on ${activePlan.name}. Upgrade your plan to track more prompts.`
+                );
+                return;
+              }
               setEditingPrompt(null);
               setIsModalOpen(true);
             }}
@@ -508,6 +536,30 @@ export default function PromptManagementPage() {
         </div>
       </div>
 
+      {/* Quota Limit Alert Banner */}
+      {!canAddPrompt(prompts.length) && (
+        <div className="rounded-xl border border-amber-200 bg-amber-50/70 p-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 shadow-2xs">
+          <div className="flex items-center gap-2.5">
+            <div className="w-8 h-8 rounded-lg bg-amber-100 border border-amber-300 text-amber-800 flex items-center justify-center shrink-0">
+              <AlertTriangle className="w-4 h-4 text-amber-700" />
+            </div>
+            <div>
+              <p className="text-xs font-bold text-amber-900">
+                Prompt Limit Reached ({prompts.length} / {effectiveLimits.maxPrompts})
+              </p>
+              <p className="text-[11px] text-amber-700">
+                You are currently tracking the maximum number of prompts allowed on the {activePlan.name} plan. Upgrade your plan or purchase +25 Prompt Packs to track additional search queries.
+              </p>
+            </div>
+          </div>
+          <Link href="/settings?tab=billing" className="shrink-0">
+            <Button size="sm" className="h-8 text-xs bg-slate-900 hover:bg-slate-800 text-white font-medium shadow-xs">
+              Upgrade / Add Prompts →
+            </Button>
+          </Link>
+        </div>
+      )}
+
       {/* Consolidated Primary Navigation Tabs */}
       <div className="flex items-center gap-2 border-b border-slate-200/90 pb-px">
         <button
@@ -525,9 +577,14 @@ export default function PromptManagementPage() {
             }`}
           />
           <span>Tracked Prompts</span>
-          <span className="px-2 py-0.5 rounded-full text-[11px] font-bold bg-slate-100 text-slate-700">
-            {prompts.length}
+          <span className="px-2 py-0.5 rounded-full text-[11px] font-bold bg-slate-100 text-slate-700 font-mono">
+            {prompts.length} / {effectiveLimits.maxPrompts}
           </span>
+          {activePlanId === "starter" && (
+            <span className="hidden sm:inline-flex px-1.5 py-0.5 rounded-md text-[10px] font-semibold bg-amber-50 text-amber-700 border border-amber-200">
+              Weekly Runs
+            </span>
+          )}
         </button>
 
         <button
@@ -1114,8 +1171,13 @@ export default function PromptManagementPage() {
             <button
               type="button"
               onClick={handleBatchExport}
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-medium border border-slate-700 transition-colors cursor-pointer"
+              className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium border transition-colors cursor-pointer ${
+                !limits.hasCsvExport
+                  ? "bg-slate-800/60 text-slate-400 border-slate-700/60 hover:bg-slate-800"
+                  : "bg-slate-800 hover:bg-slate-700 text-slate-200 border-slate-700"
+              }`}
             >
+              {!limits.hasCsvExport && <Lock className="w-3 h-3 text-slate-400" />}
               <span>Export Selected (CSV)</span>
             </button>
 

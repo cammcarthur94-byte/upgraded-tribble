@@ -18,6 +18,7 @@ import {
   FileText,
 } from "lucide-react";
 import { useBrand } from "@/context/brand-context";
+import { usePlan } from "@/context/plan-context";
 import { Button } from "@/components/ui/button";
 
 import {
@@ -87,9 +88,23 @@ function SettingsPageContent() {
     }, 4000);
   };
 
-  // Plan & Billing State
-  const [billingCycle, setBillingCycle] = useState<BillingCycle>("monthly");
-  const [activePlanId, setActivePlanId] = useState<PlanId>("scale");
+  // Plan & Billing State from Global Context
+  const {
+    activePlanId,
+    setActivePlanId,
+    activePlan,
+    billingCycle,
+    setBillingCycle,
+    limits,
+    effectiveLimits,
+    extraPromptPacks,
+    setExtraPromptPacks,
+    extraWorkspaces,
+    setExtraWorkspaces,
+    activeRegions,
+    setActiveRegions,
+  } = usePlan();
+
   const [targetPlanForModal, setTargetPlanForModal] = useState<PricingPlan | null>(null);
   const [isPlanModalOpen, setIsPlanModalOpen] = useState(false);
 
@@ -112,11 +127,6 @@ function SettingsPageContent() {
   const [isGenerateKeyModalOpen, setIsGenerateKeyModalOpen] = useState(false);
   const [selectedIntegration, setSelectedIntegration] = useState<IntegrationSource | null>(null);
   const [isConfigureIntegrationOpen, setIsConfigureIntegrationOpen] = useState(false);
-
-  // Add-Ons State
-  const [activeRegions, setActiveRegions] = useState<string[]>(["US", "UK"]);
-  const [extraPromptPacks, setExtraPromptPacks] = useState<number>(0);
-  const [extraWorkspaces, setExtraWorkspaces] = useState<number>(0);
 
   // Team Members State
   const [members, setMembers] = useState<TeamMember[]>([
@@ -285,11 +295,23 @@ function SettingsPageContent() {
   };
 
   const handleAddWorkspace = (wsName: string, wsDomain: string) => {
+    if (1 + extraWorkspaces >= effectiveLimits.maxWorkspaces) {
+      showToast(
+        `Workspace limit (${effectiveLimits.maxWorkspaces}) reached for ${activePlan.name}. Upgrade your plan or purchase an Additional Workspace pack.`
+      );
+      return;
+    }
     setExtraWorkspaces((prev) => prev + 1);
     showToast(`Workspace "${wsName}" (${wsDomain}) provisioned and isolated!`);
   };
 
   const handleInviteMember = (newMem: Omit<TeamMember, "id" | "joinedDate" | "twoFactorEnabled">) => {
+    if (members.length >= limits.maxTeamSeats) {
+      showToast(
+        `Team seat limit (${limits.maxTeamSeats}) reached for ${activePlan.name}. Upgrade your plan to invite more team members.`
+      );
+      return;
+    }
     const member: TeamMember = {
       ...newMem,
       id: `mem-${Date.now()}`,
@@ -326,6 +348,15 @@ function SettingsPageContent() {
   };
 
   const handleConfigureIntegration = (integration: IntegrationSource) => {
+    if (
+      (integration.id === "shopify" || integration.id === "ga4") &&
+      !limits.hasTrafficAttribution
+    ) {
+      showToast(
+        `${integration.name} requires Scale Plan or higher for AI Traffic Attribution. Upgrade in Billing.`
+      );
+      return;
+    }
     setSelectedIntegration(integration);
     setIsConfigureIntegrationOpen(true);
   };
@@ -342,21 +373,21 @@ function SettingsPageContent() {
       id: "billing" as const,
       label: "Billing & Plans",
       icon: CreditCard,
-      badge: "Scale Active",
+      badge: `${activePlan.name} Active`,
       badgeVariant: "emerald" as const,
     },
     {
       id: "integrations" as const,
       label: "Integrations & API",
       icon: Key,
-      badge: "4 Active",
+      badge: `${integrations.filter((i) => i.status === "connected").length} Active`,
       badgeVariant: "slate" as const,
     },
     {
       id: "team" as const,
       label: "Team & Workspace",
       icon: Users,
-      badge: "3 Seats",
+      badge: `${members.length} / ${limits.maxTeamSeats} Seats`,
       badgeVariant: "slate" as const,
     },
     {
@@ -490,12 +521,20 @@ function SettingsPageContent() {
         {activeTab === "team" && (
           <TeamWorkspaceTab
             members={members}
-            onOpenInviteModal={() => setIsInviteModalOpen(true)}
+            onOpenInviteModal={() => {
+              if (members.length >= limits.maxTeamSeats) {
+                showToast(
+                  `Team seat limit (${limits.maxTeamSeats}) reached for ${activePlan.name}. Upgrade your plan in Billing to invite more team members.`
+                );
+                return;
+              }
+              setIsInviteModalOpen(true);
+            }}
             onUpdateRole={handleUpdateMemberRole}
             onRemoveMember={handleRemoveMember}
             onResendInvite={handleResendInvite}
             brandName={brandName}
-            seatsMax={10}
+            seatsMax={limits.maxTeamSeats}
           />
         )}
 
@@ -554,15 +593,7 @@ function SettingsPageContent() {
         isOpen={isPlanModalOpen}
         onClose={() => setIsPlanModalOpen(false)}
         targetPlan={targetPlanForModal}
-        currentPlanName={
-          activePlanId === "scale"
-            ? "Scale (Commerce) Plan"
-            : activePlanId === "pro"
-            ? "Pro (Brand) Plan"
-            : activePlanId === "starter"
-            ? "Starter (Growth) Plan"
-            : "Enterprise Plan"
-        }
+        currentPlanName={activePlan.name}
         isAnnual={billingCycle === "annual"}
         onConfirm={handleConfirmPlanChange}
       />
@@ -579,7 +610,7 @@ function SettingsPageContent() {
         onClose={() => setIsAddWorkspaceModalOpen(false)}
         onAddWorkspace={handleAddWorkspace}
         workspacesUsed={1 + extraWorkspaces}
-        workspacesMax={3 + extraWorkspaces}
+        workspacesMax={effectiveLimits.maxWorkspaces}
       />
 
       <InviteMemberModal

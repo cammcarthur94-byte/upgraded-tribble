@@ -3,6 +3,7 @@ import { Inter } from "next/font/google";
 import "./globals.css";
 import { BrandProvider } from "@/context/brand-context";
 import { FilterProvider } from "@/context/filter-context";
+import { PlanProvider } from "@/context/plan-context";
 import { AppShell } from "@/components/layout/app-shell";
 
 const inter = Inter({ subsets: ["latin"] });
@@ -28,11 +29,13 @@ export default function RootLayout({
         />
       </head>
       <body className="font-sans antialiased text-slate-900 bg-[#f8fafc]">
-        <BrandProvider>
-          <FilterProvider>
-            <AppShell>{children}</AppShell>
-          </FilterProvider>
-        </BrandProvider>
+        <PlanProvider>
+          <BrandProvider>
+            <FilterProvider>
+              <AppShell>{children}</AppShell>
+            </FilterProvider>
+          </BrandProvider>
+        </PlanProvider>
       </body>
     </html>
   );

@@ -20,12 +20,14 @@ import {
   PanelLeftOpen,
   User,
   ExternalLink,
+  Lock,
 } from "lucide-react";
 import { BrandSelector } from "./brand-selector";
 import { QuickSearchModal } from "./quick-search-modal";
 import { HelpSupportModal } from "./help-support-modal";
 import { MOCK_BRANDS, MOCK_USER } from "@/lib/mock-data";
 import { BrandData } from "@/lib/types";
+import { usePlan } from "@/context/plan-context";
 
 interface SidebarProps {
   currentBrand: BrandData;
@@ -43,6 +45,7 @@ export function Sidebar({
   onToggleCollapse,
 }: SidebarProps) {
   const pathname = usePathname();
+  const { limits, activePlan } = usePlan();
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [isHelpOpen, setIsHelpOpen] = useState(false);
   const [isProfileOpen, setIsProfileOpen] = useState(false);
@@ -264,12 +267,19 @@ export function Sidebar({
             <nav className="space-y-0.5">
               {reportsNav.map((item) => {
                 const Icon = item.icon;
+                const isLocked = item.title === "AI Shopping" && !limits.hasAiShopping;
                 return (
                   <Link
                     key={item.title}
                     href={item.href}
-                    title={isCollapsed ? item.title : undefined}
-                    className={`group flex items-center ${
+                    title={
+                      isCollapsed
+                        ? isLocked
+                          ? `${item.title} (Pro Feature)`
+                          : item.title
+                        : undefined
+                    }
+                    className={`group flex items-center justify-between ${
                       isCollapsed ? "justify-center p-2.5" : "px-3 py-2"
                     } text-sm rounded-xl font-medium transition-all ${
                       item.active
@@ -291,6 +301,13 @@ export function Sidebar({
                       />
                       {!isCollapsed && <span className="truncate">{item.title}</span>}
                     </div>
+
+                    {!isCollapsed && isLocked && (
+                      <span className="inline-flex items-center gap-0.5 text-[9px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded-md bg-amber-50 text-amber-700 border border-amber-200/80 shrink-0">
+                        <Lock className="w-2.5 h-2.5" />
+                        PRO
+                      </span>
+                    )}
                   </Link>
                 );
               })}
@@ -424,8 +441,13 @@ export function Sidebar({
             >
               {/* Profile Menu Header */}
               <div className="px-3 py-2 border-b border-slate-100 bg-slate-50/40">
-                <div className="text-xs font-semibold text-slate-900 truncate">
-                  {MOCK_USER.fullName}
+                <div className="flex items-center justify-between gap-1.5">
+                  <div className="text-xs font-semibold text-slate-900 truncate">
+                    {MOCK_USER.fullName}
+                  </div>
+                  <span className="text-[9px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded-md bg-emerald-50 text-emerald-700 border border-emerald-200 shrink-0">
+                    {activePlan.name}
+                  </span>
                 </div>
                 <div className="text-[11px] text-slate-400 truncate mt-0.5">
                   {MOCK_USER.email}

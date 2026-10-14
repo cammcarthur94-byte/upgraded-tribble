@@ -10,7 +10,9 @@ import {
   Layers,
   Clock,
   ArrowRight,
+  Lock,
 } from "lucide-react";
+import { usePlan } from "@/context/plan-context";
 import {
   SupportedEngine,
   PromptItem,
@@ -77,6 +79,8 @@ export function AddPromptModal({
   onSavePrompt,
   initialPrompt,
 }: AddPromptModalProps) {
+  const { limits, isEngineAllowed, isFrequencyAllowed, activePlan } = usePlan();
+
   const [queryText, setQueryText] = useState("");
   const [frequency, setFrequency] = useState<"daily" | "weekly">("daily");
   const [targetEngines, setTargetEngines] = useState<SupportedEngine[]>([
@@ -156,8 +160,14 @@ export function AddPromptModal({
   useEffect(() => {
     if (initialPrompt) {
       setQueryText(initialPrompt.queryText);
-      setFrequency(initialPrompt.frequency);
-      setTargetEngines(initialPrompt.targetEngines);
+      setFrequency(
+        initialPrompt.frequency && isFrequencyAllowed(initialPrompt.frequency)
+          ? initialPrompt.frequency
+          : isFrequencyAllowed("daily")
+          ? "daily"
+          : "weekly"
+      );
+      setTargetEngines(initialPrompt.targetEngines.filter((e) => isEngineAllowed(e)));
       setPromptType(initialPrompt.promptType || "Recommendation");
       setBrandedType(initialPrompt.brandedType || "Unbranded");
       setSearchIntent(initialPrompt.searchIntent || "Commercial");
@@ -165,8 +175,12 @@ export function AddPromptModal({
       setIsManualClassification(true);
     } else {
       setQueryText("");
-      setFrequency("daily");
-      setTargetEngines(["chatgpt", "claude", "gemini", "perplexity"]);
+      setFrequency(isFrequencyAllowed("daily") ? "daily" : "weekly");
+      setTargetEngines(
+        (["chatgpt", "claude", "gemini", "perplexity"] as SupportedEngine[]).filter((e) =>
+          isEngineAllowed(e)
+        )
+      );
       setPromptType("Recommendation");
       setBrandedType("Unbranded");
       setSearchIntent("Commercial");
@@ -178,11 +192,16 @@ export function AddPromptModal({
       setTargetPersona("");
       setErrorMsg(null);
     }
-  }, [initialPrompt, isOpen]);
+  }, [initialPrompt, isOpen, isFrequencyAllowed, isEngineAllowed]);
 
   if (!isOpen) return null;
 
   const toggleEngine = (engine: SupportedEngine) => {
+    if (!isEngineAllowed(engine)) {
+      setErrorMsg(`${engine.toUpperCase()} is locked on the Starter plan. Upgrade to Pro to audit this engine.`);
+      return;
+    }
+    setErrorMsg(null);
     if (targetEngines.includes(engine)) {
       if (targetEngines.length === 1) return; // Must select at least one
       setTargetEngines(targetEngines.filter((e) => e !== engine));
@@ -547,29 +566,51 @@ export function AddPromptModal({
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
               {AVAILABLE_ENGINES.map((engine) => {
                 const isSelected = targetEngines.includes(engine.id);
+                const isAllowed = isEngineAllowed(engine.id);
                 return (
                   <div
                     key={engine.id}
-                    onClick={() => toggleEngine(engine.id)}
-                    className={`cursor-pointer flex items-center justify-between p-3 rounded-xl border transition-all ${
-                      isSelected
-                        ? "border-slate-800 bg-slate-900/5 shadow-2xs"
-                        : "border-slate-200 bg-white hover:border-slate-300"
+                    onClick={() => {
+                      if (isAllowed) {
+                        toggleEngine(engine.id);
+                      } else {
+                        setErrorMsg(`${engine.name} requires Pro or Scale plan.`);
+                      }
+                    }}
+                    className={`flex items-center justify-between p-3 rounded-xl border transition-all ${
+                      !isAllowed
+                        ? "opacity-60 bg-slate-50 border-dashed border-slate-300 cursor-not-allowed"
+                        : isSelected
+                        ? "border-slate-800 bg-slate-900/5 shadow-2xs cursor-pointer"
+                        : "border-slate-200 bg-white hover:border-slate-300 cursor-pointer"
                     }`}
                   >
                     <div className="flex items-center gap-3">
                       <div
                         className={`w-4 h-4 rounded-sm border flex items-center justify-center transition-colors ${
-                          isSelected
+                          !isAllowed
+                            ? "border-slate-300 bg-slate-100 text-slate-400"
+                            : isSelected
                             ? "bg-slate-900 border-slate-900 text-white"
                             : "border-slate-300 bg-white"
                         }`}
                       >
-                        {isSelected && <Check className="w-3 h-3" />}
+                        {!isAllowed ? (
+                          <Lock className="w-2.5 h-2.5 text-slate-400" />
+                        ) : isSelected ? (
+                          <Check className="w-3 h-3" />
+                        ) : null}
                       </div>
                       <div>
-                        <div className="text-xs font-medium text-slate-900">
-                          {engine.name}
+                        <div className="flex items-center gap-1.5">
+                          <span className="text-xs font-medium text-slate-900">
+                            {engine.name}
+                          </span>
+                          {!isAllowed && (
+                            <span className="inline-flex items-center gap-0.5 text-[9px] font-bold text-indigo-700 bg-indigo-50 border border-indigo-200 px-1 py-0.2 rounded-sm">
+                              PRO
+                            </span>
+                          )}
                         </div>
                         <div className="text-[10px] text-slate-400">
                           {engine.desc}
@@ -594,36 +635,61 @@ export function AddPromptModal({
               </span>
             </div>
             <div className="grid grid-cols-2 gap-3">
-              <label
-                className={`cursor-pointer flex items-center gap-3 p-3 rounded-xl border text-left transition-all ${
-                  frequency === "daily"
-                    ? "border-slate-800 bg-slate-900/5 ring-1 ring-slate-800"
-                    : "border-slate-200 bg-white hover:border-slate-300"
-                }`}
-              >
-                <input
-                  type="radio"
-                  name="frequency"
-                  value="daily"
-                  checked={frequency === "daily"}
-                  onChange={() => setFrequency("daily")}
-                  className="sr-only"
-                />
-                <div className="w-4 h-4 rounded-full border border-slate-400 flex items-center justify-center">
-                  {frequency === "daily" && (
-                    <div className="w-2 h-2 rounded-full bg-slate-900" />
-                  )}
-                </div>
-                <div>
-                  <div className="text-xs font-semibold text-slate-900">
-                    Daily
-                  </div>
-                  <div className="text-[11px] text-slate-500">
-                    Runs every 24 hours
-                  </div>
-                </div>
-              </label>
+              {/* Daily Option */}
+              {(() => {
+                const isDailyAllowed = isFrequencyAllowed("daily");
+                return (
+                  <label
+                    onClick={(e) => {
+                      if (!isDailyAllowed) {
+                        e.preventDefault();
+                        setErrorMsg("Daily frequency requires Pro Plan or higher (Starter includes Weekly audits).");
+                      }
+                    }}
+                    className={`flex items-center gap-3 p-3 rounded-xl border text-left transition-all ${
+                      !isDailyAllowed
+                        ? "opacity-60 bg-slate-50 border-dashed border-slate-300 cursor-not-allowed"
+                        : frequency === "daily"
+                        ? "border-slate-800 bg-slate-900/5 ring-1 ring-slate-800 cursor-pointer"
+                        : "border-slate-200 bg-white hover:border-slate-300 cursor-pointer"
+                    }`}
+                  >
+                    <input
+                      type="radio"
+                      name="frequency"
+                      value="daily"
+                      disabled={!isDailyAllowed}
+                      checked={frequency === "daily"}
+                      onChange={() => isDailyAllowed && setFrequency("daily")}
+                      className="sr-only"
+                    />
+                    <div className="w-4 h-4 rounded-full border border-slate-400 flex items-center justify-center shrink-0">
+                      {!isDailyAllowed ? (
+                        <Lock className="w-2.5 h-2.5 text-slate-400" />
+                      ) : frequency === "daily" ? (
+                        <div className="w-2 h-2 rounded-full bg-slate-900" />
+                      ) : null}
+                    </div>
+                    <div>
+                      <div className="flex items-center gap-1.5">
+                        <span className="text-xs font-semibold text-slate-900">
+                          Daily
+                        </span>
+                        {!isDailyAllowed && (
+                          <span className="inline-flex items-center gap-0.5 text-[9px] font-bold text-indigo-700 bg-indigo-50 border border-indigo-200 px-1 py-0.2 rounded-sm">
+                            PRO
+                          </span>
+                        )}
+                      </div>
+                      <div className="text-[11px] text-slate-500">
+                        {!isDailyAllowed ? "Requires Pro Plan" : "Runs every 24 hours"}
+                      </div>
+                    </div>
+                  </label>
+                );
+              })()}
 
+              {/* Weekly Option */}
               <label
                 className={`cursor-pointer flex items-center gap-3 p-3 rounded-xl border text-left transition-all ${
                   frequency === "weekly"

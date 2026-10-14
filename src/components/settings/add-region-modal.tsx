@@ -15,21 +15,18 @@ const AVAILABLE_REGIONS = [
   {
     code: "US",
     name: "United States",
-    flag: "🇺🇸",
     description: "Google AI Overviews (US-East / US-West), ChatGPT US, Perplexity US",
     includedInScale: true,
   },
   {
     code: "UK",
     name: "United Kingdom",
-    flag: "🇬🇧",
     description: "London LLM endpoints, UK AI Shopping Carousels, Gymshark Home Market",
     includedInScale: true,
   },
   {
     code: "CA",
     name: "Canada",
-    flag: "🇨🇦",
     description: "Toronto & Montreal geo-targeted prompt scraping and localized currency",
     includedInScale: false,
     price: 99,
@@ -37,7 +34,6 @@ const AVAILABLE_REGIONS = [
   {
     code: "AU",
     name: "Australia",
-    flag: "🇦🇺",
     description: "Sydney region tracking, APAC AI Shopping shelves and seasonal search patterns",
     includedInScale: false,
     price: 99,
@@ -45,7 +41,6 @@ const AVAILABLE_REGIONS = [
   {
     code: "DE",
     name: "Germany (DACH)",
-    flag: "🇩🇪",
     description: "German language LLM responses, local shopping queries, and EU regulatory index",
     includedInScale: false,
     price: 99,
@@ -53,7 +48,6 @@ const AVAILABLE_REGIONS = [
   {
     code: "FR",
     name: "France",
-    flag: "🇫🇷",
     description: "French AI Overviews, localized athleisure buyer intent and Paris market citations",
     includedInScale: false,
     price: 99,
@@ -112,7 +106,9 @@ export function AddRegionModal({
                 }`}
               >
                 <div className="flex items-start gap-3 min-w-0 pr-3">
-                  <span className="text-2xl shrink-0 mt-0.5">{region.flag}</span>
+                  <span className="w-9 h-7 rounded-lg bg-slate-100 border border-slate-200/90 flex items-center justify-center font-bold text-xs font-mono text-slate-700 shrink-0 mt-0.5 shadow-2xs">
+                    {region.code}
+                  </span>
                   <div>
                     <div className="flex items-center gap-2">
                       <span className="font-semibold text-xs text-slate-900">

@@ -1,7 +1,9 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
+import Link from "next/link";
 import { useBrand } from "@/context/brand-context";
+import { usePlan } from "@/context/plan-context";
 import { useGlobalFilters } from "@/context/filter-context";
 import { DateRangePicker } from "@/components/ui/date-range-picker";
 import { getModelInsightsAction } from "@/app/actions/model-insights-actions";
@@ -17,11 +19,13 @@ import {
   Loader2,
   Sparkles,
   Info,
+  Lock,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 export default function AIModelInsightsPage() {
   const { currentBrand } = useBrand();
+  const { activePlanId } = usePlan();
   const { dateRangeDays } = useGlobalFilters();
   const timeframeDays = dateRangeDays;
   const [report, setReport] = useState<EngineInsightsReport | null>(null);
@@ -107,6 +111,30 @@ export default function AIModelInsightsPage() {
         </div>
       ) : report ? (
         <>
+          {/* Starter Plan Notice Banner */}
+          {activePlanId === "starter" && (
+            <div className="rounded-xl border border-indigo-200 bg-gradient-to-r from-indigo-50/80 via-purple-50/40 to-white p-3.5 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 shadow-2xs">
+              <div className="flex items-center gap-2.5">
+                <div className="w-7 h-7 rounded-lg bg-indigo-600 text-white flex items-center justify-center shrink-0">
+                  <Lock className="w-3.5 h-3.5" />
+                </div>
+                <div>
+                  <p className="text-xs font-semibold text-slate-900">
+                    Starter Plan: 2 of 4 AI Engines Active (ChatGPT & Perplexity)
+                  </p>
+                  <p className="text-[11px] text-slate-500">
+                    Google Gemini and Anthropic Claude are locked on Starter. Upgrade to Pro to unlock 100% 4-engine coverage and competitor comparisons.
+                  </p>
+                </div>
+              </div>
+              <Link href="/settings?tab=billing" className="shrink-0">
+                <Button size="sm" className="h-7 text-xs bg-slate-900 hover:bg-slate-800 text-white font-medium shadow-xs">
+                  Upgrade to Pro →
+                </Button>
+              </Link>
+            </div>
+          )}
+
           {/* Step 2: Top Benchmark Cards (Engine Grid) */}
           <EngineBenchmarkCards
             engines={report.engines}

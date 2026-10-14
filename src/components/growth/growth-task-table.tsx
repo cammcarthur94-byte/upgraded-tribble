@@ -1,8 +1,11 @@
 "use client";
 
 import React, { useState } from "react";
+import Link from "next/link";
 import { GrowthTaskItem, TaskStatus } from "@/lib/types/growth";
 import { BeforeAfterImpactWidget } from "./before-after-impact-widget";
+import { usePlan } from "@/context/plan-context";
+import { Button } from "@/components/ui/button";
 import {
   TrendingUp,
   Sparkles,
@@ -21,6 +24,7 @@ import {
   Check,
   Zap,
   Play,
+  Lock,
 } from "lucide-react";
 import { Favicon, EngineFavicon } from "@/components/ui/favicon";
 
@@ -285,6 +289,7 @@ export function GrowthTaskTable({
   onSelectTask,
   drawerOnly = false,
 }: GrowthTaskTableProps) {
+  const { limits } = usePlan();
   const [internalSelectedTask, setInternalSelectedTask] =
     useState<GrowthTaskItem | null>(null);
 
@@ -636,29 +641,65 @@ export function GrowthTaskTable({
                       <Code2 className="w-3.5 h-3.5 text-slate-400" />
                       <span>{taskPlaybook.snippetLabel}</span>
                     </h4>
-                    <button
-                      type="button"
-                      onClick={() => handleCopySnippet(taskPlaybook.snippetContent)}
-                      className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-[11px] font-semibold text-slate-300 hover:text-white bg-slate-800 hover:bg-slate-700 border border-slate-700 transition-colors cursor-pointer"
-                    >
-                      {copiedSnippet ? (
-                        <>
-                          <Check className="w-3 h-3 text-emerald-400" />
-                          <span className="text-emerald-400">Copied!</span>
-                        </>
-                      ) : (
-                        <>
-                          <Copy className="w-3 h-3" />
-                          <span>Copy Deliverable</span>
-                        </>
-                      )}
-                    </button>
+                    {limits.hasSchemaGenerator ? (
+                      <button
+                        type="button"
+                        onClick={() => handleCopySnippet(taskPlaybook.snippetContent)}
+                        className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-[11px] font-semibold text-slate-300 hover:text-white bg-slate-800 hover:bg-slate-700 border border-slate-700 transition-colors cursor-pointer"
+                      >
+                        {copiedSnippet ? (
+                          <>
+                            <Check className="w-3 h-3 text-emerald-400" />
+                            <span className="text-emerald-400">Copied!</span>
+                          </>
+                        ) : (
+                          <>
+                            <Copy className="w-3 h-3" />
+                            <span>Copy Deliverable</span>
+                          </>
+                        )}
+                      </button>
+                    ) : (
+                      <span className="inline-flex items-center gap-1 text-[10px] font-bold text-indigo-700 bg-indigo-50 border border-indigo-200 px-2 py-0.5 rounded-md">
+                        <Lock className="w-2.5 h-2.5" />
+                        <span>PRO PLAN</span>
+                      </span>
+                    )}
                   </div>
-                  <div className="bg-slate-900 rounded-xl p-4 text-slate-200 font-mono text-xs overflow-x-auto shadow-2xs border border-slate-800">
-                    <pre className="leading-relaxed font-mono whitespace-pre">
-                      {taskPlaybook.snippetContent}
-                    </pre>
-                  </div>
+
+                  {!limits.hasSchemaGenerator ? (
+                    <div className="relative rounded-xl border border-indigo-200 bg-slate-900 p-6 text-center overflow-hidden">
+                      <div className="relative z-10 max-w-sm mx-auto space-y-2.5 py-2">
+                        <div className="w-8 h-8 rounded-full bg-indigo-600/30 text-indigo-400 mx-auto flex items-center justify-center border border-indigo-500/40">
+                          <Lock className="w-4 h-4" />
+                        </div>
+                        <h5 className="text-xs font-bold text-white">
+                          Automated Playbook & Schema Generator
+                        </h5>
+                        <p className="text-[11px] text-slate-400 leading-relaxed">
+                          Generating deployable Schema.org JSON-LD snippets and community outreach copy requires Pro Plan ($299/mo).
+                        </p>
+                        <div className="pt-1">
+                          <Link href="/settings?tab=billing">
+                            <Button size="sm" className="h-7 text-xs bg-indigo-600 hover:bg-indigo-700 text-white font-medium shadow-xs">
+                              Upgrade to Pro →
+                            </Button>
+                          </Link>
+                        </div>
+                      </div>
+                      {/* Blurred backdrop of snippet */}
+                      <div className="absolute inset-0 bg-slate-950/80 backdrop-blur-[2px] pointer-events-none" />
+                      <div className="absolute inset-0 p-4 font-mono text-[10px] text-slate-700 blur-[3px] select-none pointer-events-none overflow-hidden">
+                        {taskPlaybook.snippetContent}
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="bg-slate-900 rounded-xl p-4 text-slate-200 font-mono text-xs overflow-x-auto shadow-2xs border border-slate-800">
+                      <pre className="leading-relaxed font-mono whitespace-pre">
+                        {taskPlaybook.snippetContent}
+                      </pre>
+                    </div>
+                  )}
                 </div>
 
                 {/* 5. Before / After Impact Widget */}

@@ -3,6 +3,8 @@
 import React, { useState, useEffect, useTransition } from "react";
 import Link from "next/link";
 import { useBrand } from "@/context/brand-context";
+import { usePlan } from "@/context/plan-context";
+import { Button } from "@/components/ui/button";
 import {
   CitationsExplorerSummary,
   DomainIntelligenceItem,
@@ -36,12 +38,17 @@ import {
   Layers,
   BarChart3,
   SlidersHorizontal,
+  Lock,
+  Download,
+  CheckCircle2,
 } from "lucide-react";
 
 export default function CitationsExplorerPage() {
   const { currentBrand } = useBrand();
+  const { limits, activePlanId, activePlan } = usePlan();
   const [data, setData] = useState<CitationsExplorerSummary | null>(null);
   const [loading, setLoading] = useState(true);
+  const [notification, setNotification] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [typeFilter, setTypeFilter] = useState<"all" | "owned" | "third_party">("all");
   const [engineFilter, setEngineFilter] = useState<SupportedEngine | "all">("all");
@@ -54,10 +61,10 @@ export default function CitationsExplorerPage() {
   const [selectedDomainNames, setSelectedDomainNames] = useState<string[]>([]);
 
   const handleToggleSelectAllDomains = () => {
-    if (selectedDomainNames.length === sortedDomains.length) {
+    if (selectedDomainNames.length === displayedDomains.length) {
       setSelectedDomainNames([]);
     } else {
-      setSelectedDomainNames(sortedDomains.map((d) => d.domain));
+      setSelectedDomainNames(displayedDomains.map((d) => d.domain));
     }
   };
 
@@ -69,14 +76,20 @@ export default function CitationsExplorerPage() {
   };
 
   const handleBatchExportDomains = () => {
-    const selected = (data?.domains || []).filter((d) =>
-      selectedDomainNames.includes(d.domain)
-    );
+    if (!limits.hasCsvExport) {
+      setNotification("CSV export requires Pro Plan or higher (Starter does not include CSV exports).");
+      setTimeout(() => setNotification(null), 4000);
+      return;
+    }
+    const domainsToExport =
+      selectedDomainNames.length > 0
+        ? (data?.domains || []).filter((d) => selectedDomainNames.includes(d.domain))
+        : displayedDomains;
     const csvContent =
       "data:text/csv;charset=utf-8," +
       ["Domain,Type,Sentiment,Citations,Engines"]
         .concat(
-          selected.map(
+          domainsToExport.map(
             (d) =>
               `"${d.domain}","${d.isBrandOwned ? "Brand Owned" : "Third Party"}","${d.sentiment}","${d.citationCount}","${d.referencingEngines.join("; ")}"`
           )
@@ -89,6 +102,8 @@ export default function CitationsExplorerPage() {
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
+    setNotification(`Exported ${domainsToExport.length} citations to CSV.`);
+    setTimeout(() => setNotification(null), 3000);
   };
 
   const loadData = async (brandId: string) => {
@@ -151,6 +166,12 @@ export default function CitationsExplorerPage() {
     return b.citationCount - a.citationCount;
   });
 
+  const displayedDomains =
+    limits.maxReferringDomains !== Infinity &&
+    sortedDomains.length > limits.maxReferringDomains
+      ? sortedDomains.slice(0, limits.maxReferringDomains)
+      : sortedDomains;
+
   const formatRelativeTime = (iso: string) => {
     try {
       const diff = Math.floor((Date.now() - new Date(iso).getTime()) / 1000);
@@ -175,6 +196,14 @@ export default function CitationsExplorerPage() {
 
   return (
     <div className="space-y-6">
+      {/* Toast Notification */}
+      {notification && (
+        <div className="fixed bottom-6 right-6 z-50 bg-slate-900 text-white text-xs px-4 py-3 rounded-xl shadow-2xl border border-slate-700 flex items-center gap-2 animate-in fade-in slide-in-from-bottom-2">
+          <CheckCircle2 className="w-4 h-4 text-emerald-400" />
+          <span>{notification}</span>
+        </div>
+      )}
+
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
@@ -188,6 +217,23 @@ export default function CitationsExplorerPage() {
         </div>
 
         <div className="flex items-center gap-3 shrink-0">
+          <button
+            onClick={handleBatchExportDomains}
+            className="inline-flex items-center gap-1.5 px-3 py-2 text-xs font-medium rounded-xl border border-slate-200 bg-white text-slate-700 hover:bg-slate-50 hover:text-slate-900 transition-colors shadow-xs cursor-pointer"
+          >
+            {!limits.hasCsvExport ? (
+              <Lock className="w-3.5 h-3.5 text-indigo-500" />
+            ) : (
+              <Download className="w-3.5 h-3.5 text-slate-500" />
+            )}
+            <span>Export CSV</span>
+            {!limits.hasCsvExport && (
+              <span className="text-[9px] font-bold text-indigo-700 bg-indigo-50 border border-indigo-200 px-1 py-0.2 rounded-sm ml-0.5">
+                PRO
+              </span>
+            )}
+          </button>
+
           <button
             onClick={handleRefresh}
             disabled={loading || isPending}
@@ -349,8 +395,18 @@ export default function CitationsExplorerPage() {
                   <option value="all">All AI Engines</option>
                   <option value="perplexity">Perplexity Sonar</option>
                   <option value="chatgpt">OpenAI ChatGPT</option>
-                  <option value="gemini">Google Gemini</option>
-                  <option value="claude">Anthropic Claude</option>
+                  <option
+                    value="gemini"
+                    disabled={!limits.allowedEngines.includes("gemini")}
+                  >
+                    Google Gemini{!limits.allowedEngines.includes("gemini") ? " (Pro Required)" : ""}
+                  </option>
+                  <option
+                    value="claude"
+                    disabled={!limits.allowedEngines.includes("claude")}
+                  >
+                    Anthropic Claude{!limits.allowedEngines.includes("claude") ? " (Pro Required)" : ""}
+                  </option>
                 </select>
               </div>
 
@@ -376,7 +432,7 @@ export default function CitationsExplorerPage() {
             {/* Filter stats active pill */}
             <div className="flex items-center justify-between text-xs text-slate-500 pt-1">
               <span>
-                Showing <span className="text-slate-900 font-semibold">{sortedDomains.length}</span> of{" "}
+                Showing <span className="text-slate-900 font-semibold">{displayedDomains.length}</span> of{" "}
                 <span className="text-slate-900 font-semibold">{data?.uniqueReferringDomains || 51}</span> discovered domains
               </span>
               {(searchQuery || typeFilter !== "all" || engineFilter !== "all" || sortBy !== "citations") && (
@@ -395,6 +451,30 @@ export default function CitationsExplorerPage() {
             </div>
           </div>
 
+          {/* Starter Plan Limit Banner */}
+          {limits.maxReferringDomains !== Infinity && sortedDomains.length > limits.maxReferringDomains && (
+            <div className="rounded-xl border border-indigo-200 bg-gradient-to-r from-indigo-50/80 via-purple-50/40 to-white p-3.5 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 shadow-2xs">
+              <div className="flex items-center gap-2.5">
+                <div className="w-7 h-7 rounded-lg bg-indigo-600 text-white flex items-center justify-center shrink-0">
+                  <Lock className="w-3.5 h-3.5" />
+                </div>
+                <div>
+                  <p className="text-xs font-semibold text-slate-900">
+                    Starter Plan: Showing Top {limits.maxReferringDomains} of {sortedDomains.length} Referring Domains
+                  </p>
+                  <p className="text-[11px] text-slate-500">
+                    Starter plan includes Top 20 referring domains. Upgrade to Pro for unlimited domains, citation gap explorer, and CSV export.
+                  </p>
+                </div>
+              </div>
+              <Link href="/settings?tab=billing" className="shrink-0">
+                <Button size="sm" className="h-7 text-xs bg-slate-900 hover:bg-slate-800 text-white font-medium shadow-xs">
+                  Upgrade to Pro →
+                </Button>
+              </Link>
+            </div>
+          )}
+
           {/* Domain Aggregation Table */}
           <div className="bg-white rounded-xl border border-slate-200/60 shadow-2xs overflow-hidden">
             <div className="overflow-x-auto">
@@ -405,8 +485,8 @@ export default function CitationsExplorerPage() {
                       <input
                         type="checkbox"
                         checked={
-                          sortedDomains.length > 0 &&
-                          selectedDomainNames.length === sortedDomains.length
+                          displayedDomains.length > 0 &&
+                          selectedDomainNames.length === displayedDomains.length
                         }
                         onChange={handleToggleSelectAllDomains}
                         className="rounded border-slate-300 text-slate-900 focus:ring-0 cursor-pointer"
@@ -434,7 +514,7 @@ export default function CitationsExplorerPage() {
                         </div>
                       </td>
                     </tr>
-                  ) : sortedDomains.length === 0 ? (
+                  ) : displayedDomains.length === 0 ? (
                     <tr>
                       <td colSpan={8} className="py-16 text-center text-slate-400 border-b border-slate-200/80">
                         <div className="max-w-md mx-auto space-y-2">
@@ -449,7 +529,7 @@ export default function CitationsExplorerPage() {
                       </td>
                     </tr>
                   ) : (
-                    sortedDomains.map((item) => {
+                    displayedDomains.map((item) => {
                       const isExpanded = expandedDomain === item.domain;
                       return (
                         <React.Fragment key={item.domain}>
@@ -670,10 +750,10 @@ export default function CitationsExplorerPage() {
             </div>
 
             {/* Clean Pagination Footer */}
-            {!loading && sortedDomains.length > 0 && (
+            {!loading && displayedDomains.length > 0 && (
               <div className="p-4 border-t border-slate-100 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-slate-500 bg-slate-50/40">
                 <span>
-                  Showing <strong className="text-slate-800 font-semibold">{sortedDomains.length}</strong> of{" "}
+                  Showing <strong className="text-slate-800 font-semibold">{displayedDomains.length}</strong> of{" "}
                   <strong className="text-slate-800 font-semibold">{data?.uniqueReferringDomains || 51}</strong> discovered domains
                 </span>
                 <div className="flex items-center gap-1.5 font-medium">

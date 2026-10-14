@@ -1,10 +1,11 @@
 "use client";
 
 import React, { useState } from "react";
-import { ChevronDown, Check, Building2, Plus, Sparkles } from "lucide-react";
+import { ChevronDown, Check, Building2, Plus, Sparkles, Lock } from "lucide-react";
 import { BrandData } from "@/lib/types";
 import { BrandFavicon } from "@/components/ui/favicon";
 import Link from "next/link";
+import { usePlan } from "@/context/plan-context";
 
 interface BrandSelectorProps {
   brands: BrandData[];
@@ -19,6 +20,7 @@ export function BrandSelector({
   onSelectBrand,
   isCollapsed = false,
 }: BrandSelectorProps) {
+  const { effectiveLimits, activePlan } = usePlan();
   const [isOpen, setIsOpen] = useState(false);
 
   const brandName = selectedBrand?.brandName || "Select Brand";
@@ -83,8 +85,8 @@ export function BrandSelector({
           >
             <div className="px-3 py-1.5 text-[11px] font-semibold uppercase tracking-wider text-slate-400 border-b border-slate-100 flex items-center justify-between">
               <span>Workspaces</span>
-              <span className="font-mono text-[10px] text-slate-400 font-normal">
-                {brands.length} {brands.length === 1 ? "Brand" : "Brands"}
+              <span className="font-mono text-[10px] text-slate-500 font-medium">
+                {brands.length} / {effectiveLimits.maxWorkspaces} Used
               </span>
             </div>
 
@@ -128,7 +130,7 @@ export function BrandSelector({
             </div>
 
             {/* Bottom: Configure & Add Brand Links */}
-            <div className="pt-1.5 mt-1 border-t border-slate-100 px-1.5 space-y-0.5">
+            <div className="pt-1.5 mt-1 border-t border-slate-100 px-1.5 space-y-1">
               <Link
                 href="/admin/brand-profile"
                 onClick={() => setIsOpen(false)}
@@ -137,6 +139,29 @@ export function BrandSelector({
                 <Sparkles className="w-3.5 h-3.5 text-indigo-500" />
                 <span>Manage Brand Profile</span>
               </Link>
+
+              {brands.length >= effectiveLimits.maxWorkspaces ? (
+                <Link
+                  href="/settings?tab=billing"
+                  onClick={() => setIsOpen(false)}
+                  className="w-full flex items-center justify-between px-2.5 py-1.5 rounded-lg text-xs font-medium text-amber-800 bg-amber-50 hover:bg-amber-100/80 transition-colors"
+                >
+                  <span className="flex items-center gap-1.5">
+                    <Lock className="w-3 h-3 text-amber-600" />
+                    <span>Workspace Limit ({effectiveLimits.maxWorkspaces})</span>
+                  </span>
+                  <span className="text-[10px] underline font-semibold">Upgrade</span>
+                </Link>
+              ) : (
+                <Link
+                  href="/settings?tab=general"
+                  onClick={() => setIsOpen(false)}
+                  className="w-full flex items-center gap-2 px-2.5 py-1.5 rounded-lg text-xs font-medium text-slate-600 hover:text-slate-900 hover:bg-slate-50 transition-colors"
+                >
+                  <Plus className="w-3.5 h-3.5 text-slate-400" />
+                  <span>Add Brand Workspace</span>
+                </Link>
+              )}
             </div>
           </div>
         </>

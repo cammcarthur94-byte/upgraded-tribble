@@ -10,8 +10,10 @@ import {
   Sparkles,
   ArrowRight,
   RefreshCw,
+  Lock,
 } from "lucide-react";
 import { useGlobalFilters, DateRangeType } from "@/context/filter-context";
+import { usePlan } from "@/context/plan-context";
 
 export interface DateRangePickerProps {
   className?: string;
@@ -36,6 +38,7 @@ export function DateRangePicker({
     setDateRange,
     setCustomDateRange,
   } = useGlobalFilters();
+  const { limits, isDateRangeAllowed, activePlan } = usePlan();
 
   const [isOpen, setIsOpen] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
@@ -115,11 +118,12 @@ export function DateRangePicker({
     return Math.ceil(diffTime / (1000 * 60 * 60 * 24)) + 1;
   }, [draftStart, draftEnd]);
 
-  const isDraftValid = draftDurationDays > 0 && draftDurationDays <= 365;
+  const isDraftValid = draftDurationDays > 0 && isDateRangeAllowed(draftDurationDays);
 
   const quickPresets = [
     {
       label: "Last 7 Days",
+      days: 7,
       getRange: () => {
         const end = new Date();
         const start = new Date();
@@ -129,6 +133,7 @@ export function DateRangePicker({
     },
     {
       label: "Last 14 Days",
+      days: 14,
       getRange: () => {
         const end = new Date();
         const start = new Date();
@@ -138,6 +143,7 @@ export function DateRangePicker({
     },
     {
       label: "Last 30 Days",
+      days: 30,
       getRange: () => {
         const end = new Date();
         const start = new Date();
@@ -147,6 +153,7 @@ export function DateRangePicker({
     },
     {
       label: "Last 60 Days",
+      days: 60,
       getRange: () => {
         const end = new Date();
         const start = new Date();
@@ -156,6 +163,7 @@ export function DateRangePicker({
     },
     {
       label: "Last 90 Days",
+      days: 90,
       getRange: () => {
         const end = new Date();
         const start = new Date();
@@ -165,6 +173,7 @@ export function DateRangePicker({
     },
     {
       label: "Month to Date",
+      days: 31,
       getRange: () => {
         const end = new Date();
         const start = new Date(end.getFullYear(), end.getMonth(), 1);
@@ -173,6 +182,7 @@ export function DateRangePicker({
     },
     {
       label: "Year to Date",
+      days: 365,
       getRange: () => {
         const end = new Date();
         const start = new Date(end.getFullYear(), 0, 1);
@@ -211,23 +221,38 @@ export function DateRangePicker({
         {showPresets && (
           <>
             {[
-              { label: "7 Days", value: "7d" as DateRangeType },
-              { label: "30 Days", value: "30d" as DateRangeType },
-              { label: "90 Days", value: "90d" as DateRangeType },
+              { label: "7 Days", value: "7d" as DateRangeType, days: 7 },
+              { label: "30 Days", value: "30d" as DateRangeType, days: 30 },
+              { label: "90 Days", value: "90d" as DateRangeType, days: 90 },
             ].map((opt) => {
               const isSelected = dateRange === opt.value;
+              const isAllowed = isDateRangeAllowed(opt.days);
               return (
                 <button
                   key={opt.value}
                   type="button"
-                  onClick={() => handlePresetSelect(opt.value)}
-                  className={`px-2.5 sm:px-3 py-1.5 rounded-md font-medium transition-all text-xs cursor-pointer ${
-                    isSelected
-                      ? "bg-white text-slate-900 shadow-2xs font-semibold"
-                      : "text-slate-500 hover:text-slate-900"
+                  onClick={() => {
+                    if (isAllowed) {
+                      handlePresetSelect(opt.value);
+                    }
+                  }}
+                  title={
+                    !isAllowed
+                      ? `${opt.days}-day data retention requires Pro Plan or higher (current: ${activePlan.name}).`
+                      : undefined
+                  }
+                  className={`inline-flex items-center gap-1 px-2.5 sm:px-3 py-1.5 rounded-md font-medium transition-all text-xs ${
+                    !isAllowed
+                      ? "opacity-50 text-slate-400 cursor-not-allowed"
+                      : isSelected
+                      ? "bg-white text-slate-900 shadow-2xs font-semibold cursor-pointer"
+                      : "text-slate-500 hover:text-slate-900 cursor-pointer"
                   }`}
                 >
-                  {opt.label}
+                  <span>{opt.label}</span>
+                  {!isAllowed && (
+                    <Lock className="w-2.5 h-2.5 text-slate-400 shrink-0" />
+                  )}
                 </button>
               );
             })}
@@ -313,18 +338,33 @@ export function DateRangePicker({
                 Quick Ranges
               </span>
               {quickPresets.map((preset) => {
+                const isAllowed = isDateRangeAllowed(preset.days);
                 return (
                   <button
                     key={preset.label}
                     type="button"
+                    disabled={!isAllowed}
                     onClick={() => {
+                      if (!isAllowed) return;
                       const range = preset.getRange();
                       setDraftStart(range.start);
                       setDraftEnd(range.end);
                     }}
-                    className="w-full text-left px-2 py-1.5 rounded-lg text-xs text-slate-600 hover:text-slate-900 hover:bg-slate-50 font-medium transition"
+                    title={
+                      !isAllowed
+                        ? `${preset.days}-day data retention requires Pro Plan or higher (current: ${activePlan.name}).`
+                        : undefined
+                    }
+                    className={`w-full text-left px-2 py-1.5 rounded-lg text-xs font-medium transition flex items-center justify-between ${
+                      !isAllowed
+                        ? "opacity-40 text-slate-400 cursor-not-allowed"
+                        : "text-slate-600 hover:text-slate-900 hover:bg-slate-50 cursor-pointer"
+                    }`}
                   >
-                    {preset.label}
+                    <span>{preset.label}</span>
+                    {!isAllowed && (
+                      <Lock className="w-2.5 h-2.5 text-slate-400 shrink-0" />
+                    )}
                   </button>
                 );
               })}
@@ -369,9 +409,16 @@ export function DateRangePicker({
                 </div>
                 <div>
                   {draftDurationDays > 0 ? (
-                    <span className="px-2 py-0.5 rounded-full text-xs font-bold bg-emerald-100 text-emerald-800">
-                      {draftDurationDays} {draftDurationDays === 1 ? "day" : "days"}
-                    </span>
+                    isDateRangeAllowed(draftDurationDays) ? (
+                      <span className="px-2 py-0.5 rounded-full text-xs font-bold bg-emerald-100 text-emerald-800">
+                        {draftDurationDays} {draftDurationDays === 1 ? "day" : "days"}
+                      </span>
+                    ) : (
+                      <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-bold bg-amber-100 text-amber-800">
+                        <Lock className="w-3 h-3" />
+                        {draftDurationDays}d (Exceeds {limits.maxRetentionDays}d limit)
+                      </span>
+                    )
                   ) : (
                     <span className="text-xs text-rose-500 font-medium">
                       Invalid range
@@ -379,6 +426,13 @@ export function DateRangePicker({
                   )}
                 </div>
               </div>
+
+              {draftDurationDays > 0 && !isDateRangeAllowed(draftDurationDays) && (
+                <div className="p-2.5 rounded-xl bg-amber-50/80 border border-amber-200 text-amber-900 text-[11px] leading-relaxed">
+                  <span className="font-semibold">{activePlan.name} Plan</span> includes up to{" "}
+                  <span className="font-bold">{limits.maxRetentionDays} days</span> of historical data retention. Upgrade to expand your lookback window.
+                </div>
+              )}
             </div>
           </div>
 

@@ -20,10 +20,12 @@ import {
   Shield,
   Layers,
   Sparkles,
+  Lock,
 } from "lucide-react";
 import { Favicon } from "@/components/ui/favicon";
 import { Button } from "@/components/ui/button";
 import { IntegrationSource, ApiKeyItem } from "./types";
+import { usePlan } from "@/context/plan-context";
 
 interface IntegrationsApiTabProps {
   integrations: IntegrationSource[];
@@ -40,6 +42,7 @@ export function IntegrationsApiTab({
   onOpenGenerateKeyModal,
   onShowToast,
 }: IntegrationsApiTabProps) {
+  const { limits, activePlan } = usePlan();
   const [revealedKeys, setRevealedKeys] = useState<Record<string, boolean>>({});
   const [copiedKeyId, setCopiedKeyId] = useState<string | null>(null);
   const [selectedSnippetTab, setSelectedSnippetTab] = useState<"curl" | "typescript">("curl");
@@ -89,12 +92,16 @@ const citations = await recomnd.citations.list({
         <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
           {integrations.map((item) => {
             const isConnected = item.status === "connected";
+            const isTrafficAttribution = item.id === "shopify" || item.id === "ga4";
+            const isLocked = isTrafficAttribution && !limits.hasTrafficAttribution;
 
             return (
               <div
                 key={item.id}
                 className={`p-5 rounded-2xl border transition-all flex flex-col justify-between ${
-                  isConnected
+                  isLocked
+                    ? "border-slate-200/70 bg-slate-50/40 opacity-90"
+                    : isConnected
                     ? "border-slate-200/90 bg-white shadow-xs hover:border-slate-300"
                     : "border-dashed border-slate-300 bg-slate-50/50 hover:bg-white hover:border-slate-400"
                 }`}
@@ -132,7 +139,12 @@ const citations = await recomnd.citations.list({
                     </div>
 
                     <div>
-                      {isConnected ? (
+                      {isLocked ? (
+                        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-50 text-amber-700 border border-amber-200/80">
+                          <Lock className="w-2.5 h-2.5" />
+                          Scale Plan
+                        </span>
+                      ) : isConnected ? (
                         <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200/80">
                           <span className="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
                           {item.badgeText || "Active"}
@@ -157,7 +169,20 @@ const citations = await recomnd.citations.list({
                     {item.lastSynced ? `Sync: ${item.lastSynced}` : "OAuth 2.0 / API"}
                   </span>
 
-                  {isConnected ? (
+                  {isLocked ? (
+                    <Button
+                      size="sm"
+                      onClick={() =>
+                        onShowToast(
+                          `GA4 & Shopify AI Traffic Attribution requires Scale Plan or higher (current: ${activePlan.name}). Upgrade in Billing.`
+                        )
+                      }
+                      className="h-8 text-xs bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-200 font-medium flex items-center gap-1 cursor-pointer"
+                    >
+                      <Lock className="w-3 h-3 text-slate-500" />
+                      <span>Scale Required</span>
+                    </Button>
+                  ) : isConnected ? (
                     <Button
                       variant="outline"
                       size="sm"
@@ -186,9 +211,17 @@ const citations = await recomnd.citations.list({
       <div className="space-y-4 pt-2">
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
           <div>
-            <h2 className="text-base font-bold tracking-tight text-slate-900">
-              Developer API Keys
-            </h2>
+            <div className="flex items-center gap-2">
+              <h2 className="text-base font-bold tracking-tight text-slate-900">
+                Developer API Keys
+              </h2>
+              {!limits.hasPriorityApi && (
+                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-50 text-amber-700 border border-amber-200/80">
+                  <Lock className="w-2.5 h-2.5" />
+                  Scale Plan
+                </span>
+              )}
+            </div>
             <p className="text-xs text-slate-500 mt-0.5">
               Authenticate requests to the Recomnd Telemetry REST API and stream generative citation data into your data warehouse.
             </p>
@@ -196,11 +229,28 @@ const citations = await recomnd.citations.list({
 
           <Button
             size="sm"
-            onClick={onOpenGenerateKeyModal}
+            onClick={() => {
+              if (!limits.hasPriorityApi) {
+                onShowToast(
+                  `Developer REST API access requires Scale Plan or higher (current: ${activePlan.name}). Upgrade in Billing.`
+                );
+                return;
+              }
+              onOpenGenerateKeyModal();
+            }}
             className="gap-1.5 h-8 text-xs bg-slate-900 hover:bg-slate-800 text-white font-medium self-start sm:self-auto"
           >
-            <Plus className="w-3.5 h-3.5" />
-            + Generate New Secret Key
+            {!limits.hasPriorityApi ? (
+              <>
+                <Lock className="w-3.5 h-3.5" />
+                <span>+ Generate Key (Scale)</span>
+              </>
+            ) : (
+              <>
+                <Plus className="w-3.5 h-3.5" />
+                <span>+ Generate New Secret Key</span>
+              </>
+            )}
           </Button>
         </div>
 
