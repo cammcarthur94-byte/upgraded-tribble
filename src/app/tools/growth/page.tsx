@@ -18,6 +18,9 @@ import {
   Layers,
   RefreshCw,
   Flame,
+  RotateCcw,
+  SlidersHorizontal,
+  X,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
@@ -28,6 +31,8 @@ export default function GrowthOpportunitiesPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [viewMode, setViewMode] = useState<"table" | "kanban">("table");
   const [categoryFilter, setCategoryFilter] = useState<string>("all");
+  const [engineFilter, setEngineFilter] = useState<string>("all");
+  const [effortFilter, setEffortFilter] = useState<string>("all");
   const [toastMessage, setToastMessage] = useState<string | null>(null);
 
   const loadTasks = () => {
@@ -84,10 +89,38 @@ export default function GrowthOpportunitiesPage() {
   const implementedCount = tasks.filter((t) => t.status === "Implemented").length;
   const todoCount = tasks.filter((t) => t.status === "To Do").length;
 
-  const filteredTasks =
-    categoryFilter === "all"
-      ? tasks
-      : tasks.filter((t) => t.category === categoryFilter);
+  // Dynamic Potential Lift from active tasks (To Do + In Progress)
+  const remainingPotentialLift = tasks
+    .filter((t) => t.status === "To Do" || t.status === "In Progress")
+    .reduce((sum, t) => {
+      const val = parseFloat(t.estimatedLift.replace(/[^0-9.]/g, "")) || 0;
+      return sum + val;
+    }, 0);
+
+  const hasActiveFilters =
+    categoryFilter !== "all" || engineFilter !== "all" || effortFilter !== "all";
+
+  const resetFilters = () => {
+    setCategoryFilter("all");
+    setEngineFilter("all");
+    setEffortFilter("all");
+  };
+
+  const filteredTasks = tasks.filter((t) => {
+    if (categoryFilter !== "all" && t.category !== categoryFilter) return false;
+    if (
+      engineFilter !== "all" &&
+      t.targetEngine.toLowerCase() !== engineFilter.toLowerCase() &&
+      t.targetEngine.toLowerCase() !== "all engines"
+    )
+      return false;
+    if (
+      effortFilter !== "all" &&
+      t.effort?.toLowerCase() !== effortFilter.toLowerCase()
+    )
+      return false;
+    return true;
+  });
 
   const categories = [
     "all",
@@ -204,11 +237,11 @@ export default function GrowthOpportunitiesPage() {
           </div>
         </div>
 
-        {/* Implemented */}
+        {/* Completed */}
         <div className="bg-white rounded-xl border border-slate-200/60 p-5 shadow-2xs">
           <div className="flex items-center justify-between">
             <span className="text-xs font-semibold text-slate-500">
-              Implemented & Verified
+              Completed & Verified
             </span>
             <CheckCircle2 className="w-4 h-4 text-emerald-500" />
           </div>
@@ -222,44 +255,124 @@ export default function GrowthOpportunitiesPage() {
           </div>
         </div>
 
-        {/* Estimated Impact Lift */}
+        {/* Dynamic Potential Lift */}
         <div className="bg-white rounded-xl border border-slate-200/60 p-5 shadow-2xs">
           <div className="flex items-center justify-between">
             <span className="text-xs font-semibold text-slate-500">
-              Avg. Visibility Lift
+              Potential Lift
             </span>
             <Flame className="w-4 h-4 text-rose-500" />
           </div>
           <div className="mt-3 flex items-baseline justify-between">
             <span className="text-3xl font-black text-slate-900 tracking-tight">
-              +16.5%
+              +{remainingPotentialLift.toFixed(1)} pts
             </span>
-            <span className="text-xs font-medium text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full">
-              Verified
+            <span className="text-xs font-medium text-slate-500">
+              {implementedCount} of {totalTasks} completed
             </span>
           </div>
         </div>
       </div>
 
-      {/* Category Filter Pills */}
-      <div className="flex items-center gap-1.5 overflow-x-auto pb-1">
-        <span className="text-xs font-semibold text-slate-400 mr-1.5">
-          Category:
-        </span>
-        {categories.map((cat) => (
-          <button
-            key={cat}
-            type="button"
-            onClick={() => setCategoryFilter(cat)}
-            className={`px-3 py-1 rounded-xl text-xs font-medium transition-all capitalize shrink-0 cursor-pointer ${
-              categoryFilter === cat
-                ? "bg-slate-900 text-white shadow-2xs font-semibold"
-                : "bg-white border border-slate-200 text-slate-600 hover:bg-slate-50"
-            }`}
-          >
-            {cat === "all" ? "All Categories" : cat}
-          </button>
-        ))}
+      {/* Multi-Filter Toolbar */}
+      <div className="bg-white rounded-xl border border-slate-200/60 p-4 shadow-2xs space-y-3">
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <div className="flex items-center gap-2 text-xs font-semibold text-slate-700">
+            <SlidersHorizontal className="w-4 h-4 text-slate-400" />
+            <span>Filter Opportunities</span>
+            <span className="text-slate-400 font-normal">
+              (Showing <strong className="text-slate-900">{filteredTasks.length}</strong> of{" "}
+              <strong>{totalTasks}</strong> tasks)
+            </span>
+          </div>
+          {hasActiveFilters && (
+            <button
+              type="button"
+              onClick={resetFilters}
+              className="inline-flex items-center gap-1 text-xs font-semibold text-indigo-600 hover:text-indigo-800 hover:underline cursor-pointer"
+            >
+              <RotateCcw className="w-3.5 h-3.5" />
+              <span>Reset Filters</span>
+            </button>
+          )}
+        </div>
+
+        {/* Filter Controls Row */}
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-2 border-t border-slate-100">
+          {/* Category Filter */}
+          <div>
+            <label className="block text-[10px] font-semibold uppercase tracking-wider text-slate-400 mb-1">
+              Category
+            </label>
+            <select
+              value={categoryFilter}
+              onChange={(e) => setCategoryFilter(e.target.value)}
+              className="w-full text-xs py-1.5 px-2.5 rounded-lg border border-slate-200 bg-white text-slate-700 focus:outline-hidden focus:ring-1 focus:ring-slate-900 cursor-pointer"
+            >
+              <option value="all">All Categories</option>
+              <option value="Content Structure">Content Structure</option>
+              <option value="Citations & PR">Citations & PR</option>
+              <option value="Sentiment & Perception">Sentiment & Perception</option>
+              <option value="Schema & Technical">Schema & Technical</option>
+            </select>
+          </div>
+
+          {/* Engine Filter */}
+          <div>
+            <label className="block text-[10px] font-semibold uppercase tracking-wider text-slate-400 mb-1">
+              Target AI Engine
+            </label>
+            <select
+              value={engineFilter}
+              onChange={(e) => setEngineFilter(e.target.value)}
+              className="w-full text-xs py-1.5 px-2.5 rounded-lg border border-slate-200 bg-white text-slate-700 focus:outline-hidden focus:ring-1 focus:ring-slate-900 cursor-pointer"
+            >
+              <option value="all">All Engines</option>
+              <option value="Perplexity">Perplexity AI</option>
+              <option value="ChatGPT">OpenAI ChatGPT</option>
+              <option value="Gemini">Google Gemini</option>
+              <option value="Claude">Anthropic Claude</option>
+            </select>
+          </div>
+
+          {/* Effort Filter */}
+          <div>
+            <label className="block text-[10px] font-semibold uppercase tracking-wider text-slate-400 mb-1">
+              Implementation Effort
+            </label>
+            <select
+              value={effortFilter}
+              onChange={(e) => setEffortFilter(e.target.value)}
+              className="w-full text-xs py-1.5 px-2.5 rounded-lg border border-slate-200 bg-white text-slate-700 focus:outline-hidden focus:ring-1 focus:ring-slate-900 cursor-pointer"
+            >
+              <option value="all">All Effort Levels</option>
+              <option value="Low Effort">Low Effort</option>
+              <option value="Medium Effort">Medium Effort</option>
+              <option value="High Effort">High Effort</option>
+            </select>
+          </div>
+        </div>
+
+        {/* Quick Category Filter Pills */}
+        <div className="flex items-center gap-1.5 overflow-x-auto pt-1">
+          <span className="text-[11px] font-semibold text-slate-400 mr-1 shrink-0">
+            Quick Pill:
+          </span>
+          {categories.map((cat) => (
+            <button
+              key={cat}
+              type="button"
+              onClick={() => setCategoryFilter(cat)}
+              className={`px-2.5 py-1 rounded-lg text-xs font-medium transition-all capitalize shrink-0 cursor-pointer ${
+                categoryFilter === cat
+                  ? "bg-slate-900 text-white font-semibold shadow-2xs"
+                  : "bg-slate-50 border border-slate-200/80 text-slate-600 hover:bg-slate-100"
+              }`}
+            >
+              {cat === "all" ? "All Categories" : cat}
+            </button>
+          ))}
+        </div>
       </div>
 
       {/* Main Content Area: Table vs Kanban */}

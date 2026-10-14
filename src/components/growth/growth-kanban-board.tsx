@@ -18,7 +18,7 @@ interface GrowthKanbanBoardProps {
 const COLUMNS: { status: TaskStatus; label: string; headerColor: string }[] = [
   { status: "To Do", label: "To Do", headerColor: "border-slate-300 text-slate-700 bg-slate-100" },
   { status: "In Progress", label: "In Progress", headerColor: "border-indigo-300 text-indigo-700 bg-indigo-50" },
-  { status: "Implemented", label: "Implemented", headerColor: "border-emerald-300 text-emerald-800 bg-emerald-50" },
+  { status: "Implemented", label: "Completed", headerColor: "border-emerald-300 text-emerald-800 bg-emerald-50" },
   { status: "Dismissed", label: "Dismissed", headerColor: "border-slate-200 text-slate-500 bg-slate-50" },
 ];
 
@@ -124,7 +124,7 @@ export function GrowthKanbanBoard({
                           >
                             <option value="To Do">Move to: To Do</option>
                             <option value="In Progress">Move to: In Progress</option>
-                            <option value="Implemented">Move to: Implemented</option>
+                            <option value="Implemented">Move to: Completed</option>
                             <option value="Dismissed">Move to: Dismissed</option>
                           </select>
                           <ChevronDown className="w-3 h-3 text-slate-400 absolute right-1.5 top-2 pointer-events-none" />

@@ -526,7 +526,7 @@ export default function PromptManagementPage() {
           />
           <span>Tracked Prompts</span>
           <span className="px-2 py-0.5 rounded-full text-[11px] font-bold bg-slate-100 text-slate-700">
-            25
+            {prompts.length}
           </span>
         </button>
 
@@ -608,7 +608,7 @@ export default function PromptManagementPage() {
               <div className="flex items-center gap-2 text-xs text-slate-500 shrink-0">
                 <span>
                   Showing <strong className="text-slate-900">{filteredPrompts.length}</strong> of{" "}
-                  <strong>25</strong> prompts
+                  <strong>{prompts.length}</strong> prompts
                 </span>
                 {hasActiveFilters && (
                   <button
