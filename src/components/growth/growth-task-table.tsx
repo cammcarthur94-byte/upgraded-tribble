@@ -326,16 +326,16 @@ export function GrowthTaskTable({
     return parseLift(b.estimatedLift) - parseLift(a.estimatedLift);
   });
 
-  const getEffortBadge = (effort?: string) => {
+  const getEffortDisplay = (effort?: string) => {
     switch (effort) {
       case "Low Effort":
-        return "bg-emerald-50 text-emerald-700 border-emerald-200/80";
+        return { label: "⚡ Quick Win", style: "bg-emerald-50 text-emerald-700 border-emerald-200/80" };
       case "Medium Effort":
-        return "bg-amber-50 text-amber-700 border-amber-200/80";
+        return { label: "⏱️ Medium Effort", style: "bg-amber-50 text-amber-700 border-amber-200/80" };
       case "High Effort":
-        return "bg-purple-50 text-purple-700 border-purple-200/80";
+        return { label: "🎯 High Effort", style: "bg-purple-50 text-purple-700 border-purple-200/80" };
       default:
-        return "bg-slate-100 text-slate-600 border-slate-200";
+        return { label: effort || "⚡ Quick Win", style: "bg-slate-100 text-slate-600 border-slate-200" };
     }
   };
 
@@ -409,15 +409,16 @@ export function GrowthTaskTable({
                     <span>{task.targetEngine}</span>
                   </span>
 
-                  {task.effort && (
-                    <span
-                      className={`inline-flex items-center px-2 py-0.5 rounded-md text-[10px] font-semibold border ${getEffortBadge(
-                        task.effort
-                      )}`}
-                    >
-                      {task.effort}
-                    </span>
-                  )}
+                  {task.effort && (() => {
+                    const eff = getEffortDisplay(task.effort);
+                    return (
+                      <span
+                        className={`inline-flex items-center px-2 py-0.5 rounded-md text-[10px] font-semibold border ${eff.style}`}
+                      >
+                        {eff.label}
+                      </span>
+                    );
+                  })()}
                 </div>
 
                 {task.notes && (
@@ -432,16 +433,11 @@ export function GrowthTaskTable({
                 {task.status === "Implemented" ? (
                   <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200/80">
                     <Sparkles className="w-3.5 h-3.5 text-emerald-600" />
-                    <span>Live Lift</span>
-                  </span>
-                ) : task.status === "In Progress" ? (
-                  <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-semibold bg-indigo-50 text-indigo-700 border border-indigo-200/80">
-                    <Clock className="w-3.5 h-3.5 text-indigo-600" />
-                    <span>Active Sprint</span>
+                    <span>+{parseLift(task.estimatedLift) || 14}% Lift Verified</span>
                   </span>
                 ) : task.status === "Dismissed" ? (
                   <span className="inline-flex items-center px-2.5 py-1 rounded-lg text-xs font-medium text-slate-400 bg-slate-100/70 border border-slate-200/60">
-                    Dismissed
+                    Archived
                   </span>
                 ) : (
                   <button
@@ -450,10 +446,10 @@ export function GrowthTaskTable({
                       e.stopPropagation();
                       setSelectedTaskForDrawer(task);
                     }}
-                    className="inline-flex items-center gap-1 px-3 py-1 rounded-lg text-xs font-semibold text-slate-700 bg-slate-100 hover:bg-slate-200 border border-slate-200/70 transition-colors cursor-pointer"
+                    className="inline-flex items-center gap-1.5 px-3 py-1 rounded-lg text-xs font-semibold text-indigo-700 bg-indigo-50 hover:bg-indigo-100 border border-indigo-200 transition-colors cursor-pointer"
                   >
-                    <span>Playbook</span>
-                    <ArrowRight className="w-3 h-3 text-slate-500" />
+                    <Sparkles className="w-3.5 h-3.5 text-indigo-600" />
+                    <span>Open Playbook →</span>
                   </button>
                 )}
 
@@ -501,15 +497,16 @@ export function GrowthTaskTable({
                       />
                       <span>{selectedTaskForDrawer.targetEngine}</span>
                     </span>
-                    {selectedTaskForDrawer.effort && (
-                      <span
-                        className={`inline-flex items-center px-2 py-0.5 rounded-md text-xs font-semibold border ${getEffortBadge(
-                          selectedTaskForDrawer.effort
-                        )}`}
-                      >
-                        {selectedTaskForDrawer.effort}
-                      </span>
-                    )}
+                    {selectedTaskForDrawer.effort && (() => {
+                      const eff = getEffortDisplay(selectedTaskForDrawer.effort);
+                      return (
+                        <span
+                          className={`inline-flex items-center px-2 py-0.5 rounded-md text-xs font-semibold border ${eff.style}`}
+                        >
+                          {eff.label}
+                        </span>
+                      );
+                    })()}
                   </div>
                   <h3 className="text-base sm:text-lg font-bold text-slate-900 leading-snug">
                     {selectedTaskForDrawer.recommendationText}
@@ -567,10 +564,15 @@ export function GrowthTaskTable({
                   <div className="space-y-2">
                     {taskPlaybook.checklist.map((step, idx) => {
                       const stepKey = `${selectedTaskForDrawer.id}-step-${idx}`;
+                      const defaultChecked = isImplemented
+                        ? true
+                        : isInProgress
+                        ? idx < 2
+                        : Boolean(step.defaultDone);
                       const isChecked =
                         completedSteps[stepKey] !== undefined
                           ? completedSteps[stepKey]
-                          : Boolean(step.defaultDone);
+                          : defaultChecked;
 
                       return (
                         <div

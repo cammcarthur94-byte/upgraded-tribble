@@ -265,7 +265,7 @@ export function BeforeAfterImpactWidget({
                 Citations Gained
               </div>
               <div className="text-sm font-black text-slate-900 mt-0.5">
-                +{impactData.citationsGained}
+                +{impactData.citationsGained} Citations
               </div>
             </div>
           </div>
