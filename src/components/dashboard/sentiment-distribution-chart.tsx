@@ -35,7 +35,7 @@ const DEFAULT_SENTIMENT_EXAMPLES: Record<
     timestamp: "Audited today, 2h ago",
     quote:
       "Gymshark is widely cited as the gold standard for high-compression seamless leggings, offering squat-proof durability and body-contouring ribbing that outlasts traditional alternatives.",
-    count: 14,
+    count: 6092,
     badgeLabel: "Positive",
     accentBg: "bg-emerald-500",
     accentText: "text-emerald-600",
@@ -47,7 +47,7 @@ const DEFAULT_SENTIMENT_EXAMPLES: Record<
     timestamp: "Audited today, 3h ago",
     quote:
       "Gymshark offers accessible pricing and contemporary athletic designs comparable to Nike and Under Armour, though waistband elasticity and fabric breathability vary across specific collections.",
-    count: 6,
+    count: 2570,
     badgeLabel: "Neutral",
     accentBg: "bg-slate-400",
     accentText: "text-slate-600",
@@ -59,7 +59,7 @@ const DEFAULT_SENTIMENT_EXAMPLES: Record<
     timestamp: "Audited yesterday",
     quote:
       "Several buyer analyses note inconsistent sizing across international batches, with compression leggings frequently running smaller than standard North American athletic sizing.",
-    count: 2,
+    count: 856,
     badgeLabel: "Critical",
     accentBg: "bg-rose-500",
     accentText: "text-rose-600",
@@ -98,7 +98,7 @@ export function SentimentDistributionChart({
     {
       key: "positive",
       name: "Positive",
-      count: data?.positiveCount ?? 14,
+      count: data?.positiveCount ?? 6092,
       percentage: posPct,
       color: "bg-emerald-500",
       hexColor: "#10b981",
@@ -108,7 +108,7 @@ export function SentimentDistributionChart({
     {
       key: "neutral",
       name: "Neutral",
-      count: data?.neutralCount ?? 6,
+      count: data?.neutralCount ?? 2570,
       percentage: neuPct,
       color: "bg-slate-300",
       hexColor: "#cbd5e1",
@@ -118,7 +118,7 @@ export function SentimentDistributionChart({
     {
       key: "negative",
       name: "Critical",
-      count: data?.negativeCount ?? 2,
+      count: data?.negativeCount ?? 856,
       percentage: critPct,
       color: "bg-rose-400",
       hexColor: "#fca5a5",
@@ -296,7 +296,7 @@ export function SentimentDistributionChart({
                     {item.description}
                   </span>
                   <span className="shrink-0 font-mono text-slate-400">
-                    {item.count} mentions
+                    {item.count.toLocaleString()} mentions
                   </span>
                 </div>
               </div>
@@ -328,7 +328,7 @@ export function SentimentDistributionChart({
             onClick={() => onOpenDrawer?.(activeSentiment)}
             className="text-xs font-medium text-emerald-600 hover:text-emerald-700 transition-colors cursor-pointer"
           >
-            Inspect All ({currentExample.count}) &rarr;
+            Inspect All ({currentExample.count.toLocaleString()}) &rarr;
           </button>
         </div>
 

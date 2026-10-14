@@ -118,14 +118,14 @@ export function ShoppingSubnavTabs({
         {onSearchChange && (
           <div className="pb-2.5 sm:pb-2">
             <div className="relative w-full sm:w-72">
-              <Search className="w-3.5 h-3.5 text-slate-400 absolute left-3 top-2.5 pointer-events-none" />
+              <Search className="w-3.5 h-3.5 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
               <input
                 type="text"
                 id="searchInput"
                 value={searchQuery || ""}
                 onChange={(e) => onSearchChange(e.target.value)}
                 placeholder="Search products, merchants, prompts..."
-                className="w-full pl-8.5 pr-12 py-1.5 bg-white border border-slate-200 rounded-lg text-xs text-slate-800 placeholder-slate-400 focus:outline-hidden focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 shadow-2xs transition-all"
+                className="w-full pl-9 pr-12 py-1.5 bg-white border border-slate-200 rounded-lg text-xs text-slate-800 placeholder-slate-400 focus:outline-hidden focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 shadow-2xs transition-all"
               />
               <span className="absolute inset-y-0 right-0 pr-2.5 flex items-center pointer-events-none">
                 <kbd className="px-1.5 py-0.5 text-[10px] font-semibold text-slate-400 bg-slate-100 border border-slate-200 rounded-md">

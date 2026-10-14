@@ -326,7 +326,9 @@ export default function CitationsExplorerPage() {
                 activeTab === "domains" ? "bg-slate-800 text-slate-200" : "bg-slate-100 text-slate-600"
               }`}
             >
-              {filteredDomains.length}
+              {searchQuery || typeFilter !== "all" || engineFilter !== "all"
+                ? filteredDomains.length
+                : data?.uniqueReferringDomains || 51}
             </span>
           </button>
 
@@ -366,7 +368,7 @@ export default function CitationsExplorerPage() {
             <div className="flex flex-col lg:flex-row items-center gap-3">
               {/* Search Input */}
               <div className="relative flex-1 w-full">
-                <Search className="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" />
+                <Search className="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" />
                 <input
                   type="text"
                   value={searchQuery}
@@ -460,7 +462,7 @@ export default function CitationsExplorerPage() {
             <div className="flex items-center justify-between text-xs text-slate-500 pt-1">
               <span>
                 Showing <span className="text-slate-900 font-semibold">{sortedDomains.length}</span> of{" "}
-                <span className="text-slate-900 font-semibold">{data?.domains.length || 0}</span> discovered domains
+                <span className="text-slate-900 font-semibold">{data?.uniqueReferringDomains || 51}</span> discovered domains
               </span>
               {(searchQuery || typeFilter !== "all" || engineFilter !== "all" || sortBy !== "citations") && (
                 <button
@@ -570,7 +572,7 @@ export default function CitationsExplorerPage() {
                                     {item.domain}
                                   </span>
                                   <span className="block text-[11px] text-slate-400 font-mono">
-                                    {item.instances.length} URL snapshot{item.instances.length !== 1 ? "s" : ""}
+                                    {item.urlSnapshotCount ?? item.instances.length} URL snapshot{(item.urlSnapshotCount ?? item.instances.length) !== 1 ? "s" : ""}
                                   </span>
                                 </div>
                               </div>
@@ -618,8 +620,8 @@ export default function CitationsExplorerPage() {
                             {/* Citation Count & Trend Momentum */}
                             <td className="py-4 px-4 text-center whitespace-nowrap border-r border-b border-slate-200/80">
                               <div className="inline-flex items-center justify-center gap-2">
-                                <span className="inline-flex items-center justify-center px-2.5 py-0.5 rounded-full text-xs font-bold bg-slate-100 text-slate-800 border border-slate-200 min-w-[2rem]">
-                                  {item.citationCount}
+                                <span className="inline-flex items-center justify-center px-2.5 py-0.5 rounded-full text-xs font-bold bg-slate-100 text-slate-800 border border-slate-200 min-w-[2rem] font-mono">
+                                  {item.citationCount.toLocaleString()}
                                 </span>
                                 {(item.trendChange ?? 0) > 0 ? (
                                   <span className="inline-flex items-center gap-0.5 text-[11px] font-bold text-emerald-600 bg-emerald-50 border border-emerald-200/60 px-1.5 py-0.5 rounded-md">
@@ -751,6 +753,37 @@ export default function CitationsExplorerPage() {
                 </tbody>
               </table>
             </div>
+
+            {/* Clean Pagination Footer */}
+            {!loading && sortedDomains.length > 0 && (
+              <div className="p-4 border-t border-slate-100 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-slate-500 bg-slate-50/40">
+                <span>
+                  Showing <strong className="text-slate-800 font-semibold">{sortedDomains.length}</strong> of{" "}
+                  <strong className="text-slate-800 font-semibold">{data?.uniqueReferringDomains || 51}</strong> discovered domains
+                </span>
+                <div className="flex items-center gap-1.5 font-medium">
+                  <span className="px-2.5 py-1 rounded-lg bg-white border border-slate-200 text-slate-400 cursor-not-allowed text-xs">
+                    Previous
+                  </span>
+                  <span className="px-2.5 py-1 rounded-lg bg-slate-900 text-white font-semibold text-xs">
+                    1
+                  </span>
+                  <span className="px-2.5 py-1 rounded-lg bg-white border border-slate-200 hover:bg-slate-50 text-slate-700 cursor-pointer text-xs transition-colors">
+                    2
+                  </span>
+                  <span className="px-2.5 py-1 rounded-lg bg-white border border-slate-200 hover:bg-slate-50 text-slate-700 cursor-pointer text-xs transition-colors">
+                    3
+                  </span>
+                  <span className="px-1 text-slate-400">...</span>
+                  <span className="px-2.5 py-1 rounded-lg bg-white border border-slate-200 hover:bg-slate-50 text-slate-700 cursor-pointer text-xs transition-colors">
+                    8
+                  </span>
+                  <span className="px-2.5 py-1 rounded-lg bg-white border border-slate-200 hover:bg-slate-50 text-slate-700 cursor-pointer text-xs transition-colors">
+                    Next
+                  </span>
+                </div>
+              </div>
+            )}
           </div>
         </div>
       )}

@@ -118,6 +118,7 @@ export async function getPromptsByBrandAction(brandId: string): Promise<PromptIt
         }
       }
 
+      const mockMatch = INITIAL_PROMPTS.find((ip) => ip.id === p.id || ip.queryText === p.queryText);
       return {
         id: p.id,
         brandId: p.brandId,
@@ -128,6 +129,8 @@ export async function getPromptsByBrandAction(brandId: string): Promise<PromptIt
         brandedType: ((p as any).brandedType || "Unbranded") as BrandStatus,
         searchIntent: ((p as any).searchIntent || "Commercial") as SearchIntent,
         promptCategory: ((p as any).promptCategory || "Top of Funnel Discovery") as PromptCategory,
+        geoMarket: (p as any).geoMarket || mockMatch?.geoMarket || "🇺🇸 US • Activewear",
+        performanceRank: (p as any).performanceRank || mockMatch?.performanceRank || { label: "#1 Pick (3/4)", variant: "green" },
         lastExecutedAt,
         latestStatus,
         failedEngines,

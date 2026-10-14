@@ -9,7 +9,7 @@ import {
   YAxis,
   CartesianGrid,
   Tooltip,
-  Legend,
+  LabelList,
 } from "recharts";
 import { EngineInsightItem } from "@/lib/scoring/modelInsights";
 import { Smile, Frown, Meh } from "lucide-react";
@@ -96,37 +96,41 @@ export function SentimentBreakdownChart({
                 if (active && payload && payload.length) {
                   const data = payload[0].payload;
                   return (
-                    <div className="rounded-xl border border-slate-200 bg-white p-3 shadow-lg text-xs space-y-2 min-w-[190px]">
-                      <div className="font-semibold text-slate-900 pb-1 border-b border-slate-100 flex items-center justify-between">
+                    <div className="bg-white/95 backdrop-blur-sm rounded-xl border border-slate-200/90 p-3 shadow-lg shadow-slate-900/5 text-xs space-y-2 min-w-[190px] pointer-events-none">
+                      <div className="font-semibold text-slate-800 pb-1.5 border-b border-slate-100 flex items-center justify-between text-xs">
                         <span>{data.fullName}</span>
+                        <span className="text-[10px] text-slate-400 font-mono">Sentiment</span>
                       </div>
-                      <div className="space-y-1">
-                        <div className="flex items-center justify-between text-emerald-700">
-                          <span className="flex items-center gap-1.5">
-                            <span className="w-2 h-2 rounded-full bg-emerald-500" />
-                            Positive:
+                      <div className="space-y-1.5 text-xs">
+                        <div className="flex items-center justify-between text-slate-700">
+                          <span className="flex items-center gap-1.5 font-medium">
+                            <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
+                            Positive
                           </span>
-                          <span className="font-bold">
-                            {data.positive}% ({data.rawPos} mentions)
-                          </span>
+                          <div className="font-mono text-right">
+                            <span className="font-bold text-emerald-600">{data.positive}%</span>
+                            <span className="text-[10px] text-slate-400 ml-1">({data.rawPos})</span>
+                          </div>
                         </div>
-                        <div className="flex items-center justify-between text-slate-600">
-                          <span className="flex items-center gap-1.5">
-                            <span className="w-2 h-2 rounded-full bg-slate-400" />
-                            Neutral:
+                        <div className="flex items-center justify-between text-slate-700">
+                          <span className="flex items-center gap-1.5 font-medium">
+                            <span className="w-1.5 h-1.5 rounded-full bg-slate-400" />
+                            Neutral
                           </span>
-                          <span className="font-bold">
-                            {data.neutral}% ({data.rawNeu} mentions)
-                          </span>
+                          <div className="font-mono text-right">
+                            <span className="font-semibold text-slate-700">{data.neutral}%</span>
+                            <span className="text-[10px] text-slate-400 ml-1">({data.rawNeu})</span>
+                          </div>
                         </div>
-                        <div className="flex items-center justify-between text-rose-600">
-                          <span className="flex items-center gap-1.5">
-                            <span className="w-2 h-2 rounded-full bg-rose-500" />
-                            Critical:
+                        <div className="flex items-center justify-between text-slate-700">
+                          <span className="flex items-center gap-1.5 font-medium">
+                            <span className="w-1.5 h-1.5 rounded-full bg-rose-500" />
+                            Critical
                           </span>
-                          <span className="font-bold">
-                            {data.negative}% ({data.rawNeg} mentions)
-                          </span>
+                          <div className="font-mono text-right">
+                            <span className="font-semibold text-rose-600">{data.negative}%</span>
+                            <span className="text-[10px] text-slate-400 ml-1">({data.rawNeg})</span>
+                          </div>
                         </div>
                       </div>
                     </div>
@@ -135,19 +139,23 @@ export function SentimentBreakdownChart({
                 return null;
               }}
             />
-            <Legend
-              verticalAlign="bottom"
-              height={36}
-              iconType="circle"
-              wrapperStyle={{ paddingTop: "12px", fontSize: "11px" }}
-            />
             <Bar
               dataKey="positive"
               name="Positive"
               stackId="sentiment"
               fill="#10b981"
               radius={[0, 0, 0, 0]}
-            />
+            >
+              <LabelList
+                dataKey="positive"
+                position="insideLeft"
+                offset={10}
+                fill="#ffffff"
+                fontSize={11}
+                fontWeight={700}
+                formatter={(val: any) => `${val}%`}
+              />
+            </Bar>
             <Bar
               dataKey="neutral"
               name="Neutral"

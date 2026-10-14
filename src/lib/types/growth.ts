@@ -21,6 +21,7 @@ export interface GrowthTaskItem {
   category: TaskCategory;
   targetEngine: string;
   estimatedLift: string;
+  effort?: "Low Effort" | "Medium Effort" | "High Effort" | string;
   implementedDate: string | null;
   notes: string | null;
   createdAt: string;

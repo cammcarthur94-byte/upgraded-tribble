@@ -102,6 +102,21 @@ export function EngineBenchmarkCards({
     }
   };
 
+  const getModelSubtitle = (engine: string) => {
+    switch (engine.toLowerCase()) {
+      case "perplexity":
+        return "Sonar Search • Live Web";
+      case "chatgpt":
+        return "ChatGPT Search • Hybrid";
+      case "gemini":
+        return "AI Overviews & Gemini";
+      case "claude":
+        return "Claude Sonnet • Web + Memory";
+      default:
+        return "Live Search";
+    }
+  };
+
   return (
     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
       {engines.map((item) => {
@@ -132,7 +147,7 @@ export function EngineBenchmarkCards({
                 : "border-slate-200/60"
             }`}
           >
-            {/* Top Row: Engine Logo, Title, and Highlight Badge */}
+            {/* Top Row: Engine Logo, Title, Subtitle, and Highlight Badge */}
             <div>
               <div className="flex items-start justify-between gap-2 mb-3">
                 <div className="flex items-center gap-2.5 min-w-0">
@@ -143,7 +158,10 @@ export function EngineBenchmarkCards({
                     <h3 className="text-sm font-semibold text-slate-900 leading-tight truncate">
                       {item.displayName}
                     </h3>
-                    <div className="flex items-center gap-1.5 mt-0.5">
+                    <p className="text-[11px] text-slate-500 font-medium truncate mt-0.5">
+                      {getModelSubtitle(item.engine)}
+                    </p>
+                    <div className="flex items-center gap-1.5 mt-1">
                       <span className="relative flex h-1.5 w-1.5">
                         <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
                         <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-emerald-500"></span>

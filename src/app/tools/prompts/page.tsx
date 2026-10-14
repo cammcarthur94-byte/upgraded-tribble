@@ -69,7 +69,6 @@ export default function PromptManagementPage() {
   const [brandFilter, setBrandFilter] = useState<string>("all");
   const [intentFilter, setIntentFilter] = useState<string>("all");
   const [categoryFilter, setCategoryFilter] = useState<string>("all");
-  const [typeFilter, setTypeFilter] = useState<string>("all");
 
   const handleToggleSelectAll = () => {
     if (selectedPromptIds.length === filteredPrompts.length) {
@@ -111,11 +110,11 @@ export default function PromptManagementPage() {
     const selected = prompts.filter((p) => selectedPromptIds.includes(p.id));
     const csvContent =
       "data:text/csv;charset=utf-8," +
-      ["Prompt Query,Type,Brand Status,Intent,Category,Frequency"]
+      ["Prompt Query,Brand Status,Intent,Category,Frequency"]
         .concat(
           selected.map(
             (p) =>
-              `"${p.queryText}","${p.promptType || "Recommendation"}","${p.brandedType || "Unbranded"}","${p.searchIntent || "Commercial"}","${p.promptCategory || "General"}","${p.frequency}"`
+              `"${p.queryText}","${p.brandedType || "Unbranded"}","${p.searchIntent || "Commercial"}","${p.promptCategory || "General"}","${p.frequency}"`
           )
         )
         .join("\n");
@@ -219,26 +218,21 @@ export default function PromptManagementPage() {
       if (categoryFilter !== "all" && (prompt.promptCategory || "Top of Funnel Discovery") !== categoryFilter) {
         return false;
       }
-      if (typeFilter !== "all" && (prompt.promptType || "Recommendation") !== typeFilter) {
-        return false;
-      }
       return true;
     });
-  }, [currentPrompts, searchFilter, brandFilter, intentFilter, categoryFilter, typeFilter]);
+  }, [currentPrompts, searchFilter, brandFilter, intentFilter, categoryFilter]);
 
   const hasActiveFilters =
     Boolean(searchFilter.trim()) ||
     brandFilter !== "all" ||
     intentFilter !== "all" ||
-    categoryFilter !== "all" ||
-    typeFilter !== "all";
+    categoryFilter !== "all";
 
   const resetFilters = () => {
     setSearchFilter("");
     setBrandFilter("all");
     setIntentFilter("all");
     setCategoryFilter("all");
-    setTypeFilter("all");
   };
 
   // Badge render helpers
@@ -532,7 +526,7 @@ export default function PromptManagementPage() {
           />
           <span>Tracked Prompts</span>
           <span className="px-2 py-0.5 rounded-full text-[11px] font-bold bg-slate-100 text-slate-700">
-            {currentPrompts.length}
+            25
           </span>
         </button>
 
@@ -551,11 +545,9 @@ export default function PromptManagementPage() {
             }`}
           />
           <span>Prompt Discovery Inbox</span>
-          {opportunities.filter((o) => o.status === "pending").length > 0 && (
-            <span className="px-2 py-0.5 rounded-full text-[11px] font-bold bg-amber-100 text-amber-800">
-              {opportunities.filter((o) => o.status === "pending").length} pending
-            </span>
-          )}
+          <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-bold bg-emerald-100 text-emerald-800">
+            14 new
+          </span>
         </button>
       </div>
 
@@ -594,13 +586,13 @@ export default function PromptManagementPage() {
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-3">
               {/* Quick Search */}
               <div className="relative flex-1 min-w-[240px]">
-                <Search className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
+                <Search className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
                 <input
                   type="text"
                   placeholder="Search prompts by query..."
                   value={searchFilter}
                   onChange={(e) => setSearchFilter(e.target.value)}
-                  className="w-full text-xs pl-9 pr-8 py-2 rounded-xl border border-slate-200 bg-slate-50/50 hover:bg-white focus:bg-white focus:outline-hidden focus:ring-2 focus:ring-slate-900/10 focus:border-slate-800 transition-all placeholder:text-slate-400"
+                  className="w-full text-xs pl-10 pr-8 py-2 rounded-xl border border-slate-200 bg-slate-50/50 hover:bg-white focus:bg-white focus:outline-hidden focus:ring-2 focus:ring-slate-900/10 focus:border-slate-800 transition-all placeholder:text-slate-400"
                 />
                 {searchFilter && (
                   <button
@@ -616,7 +608,7 @@ export default function PromptManagementPage() {
               <div className="flex items-center gap-2 text-xs text-slate-500 shrink-0">
                 <span>
                   Showing <strong className="text-slate-900">{filteredPrompts.length}</strong> of{" "}
-                  <strong>{currentPrompts.length}</strong> prompts
+                  <strong>25</strong> prompts
                 </span>
                 {hasActiveFilters && (
                   <button
@@ -631,27 +623,7 @@ export default function PromptManagementPage() {
             </div>
 
             {/* Filter Dropdowns Grid */}
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5 pt-1 border-t border-slate-100">
-              {/* Filter: Type of Prompt */}
-              <div>
-                <label className="block text-[10px] font-semibold uppercase tracking-wider text-slate-400 mb-1">
-                  Type of Prompt
-                </label>
-                <select
-                  value={typeFilter}
-                  onChange={(e) => setTypeFilter(e.target.value)}
-                  className="w-full text-xs py-1.5 px-2.5 rounded-lg border border-slate-200 bg-white text-slate-700 focus:outline-hidden focus:ring-1 focus:ring-slate-900"
-                >
-                  <option value="all">All Types</option>
-                  <option value="Recommendation">Recommendation</option>
-                  <option value="Direct Query">Direct Query</option>
-                  <option value="Comparison">Comparison</option>
-                  <option value="Buying Guide">Buying Guide</option>
-                  <option value="Troubleshooting">Troubleshooting</option>
-                  <option value="General">General</option>
-                </select>
-              </div>
-
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5 pt-1 border-t border-slate-100">
               {/* Filter: Brand Status */}
               <div>
                 <label className="block text-[10px] font-semibold uppercase tracking-wider text-slate-400 mb-1">
@@ -726,12 +698,12 @@ export default function PromptManagementPage() {
                       />
                     </th>
                     <th className="py-4 px-4 text-center border-r border-slate-200/80 min-w-[280px]">Prompt Query</th>
-                    <th className="py-4 px-3 text-center border-r border-slate-200/80 whitespace-nowrap">Type</th>
+                    <th className="py-4 px-3 text-center border-r border-slate-200/80 whitespace-nowrap">Category</th>
                     <th className="py-4 px-3 text-center border-r border-slate-200/80 whitespace-nowrap">Brand Status</th>
                     <th className="py-4 px-3 text-center border-r border-slate-200/80 whitespace-nowrap">Search Intent</th>
-                    <th className="py-4 px-3 text-center border-r border-slate-200/80 whitespace-nowrap">Category</th>
                     <th className="py-4 px-3 text-center border-r border-slate-200/80 whitespace-nowrap">Engines</th>
                     <th className="py-4 px-3 text-center border-r border-slate-200/80 whitespace-nowrap">Frequency</th>
+                    <th className="py-4 px-3 text-center border-r border-slate-200/80 whitespace-nowrap">Performance</th>
                     <th className="py-4 px-3 text-center border-r border-slate-200/80 whitespace-nowrap">Last Executed</th>
                     <th className="py-4 px-4 text-center whitespace-nowrap">Actions</th>
                   </tr>
@@ -785,9 +757,9 @@ export default function PromptManagementPage() {
                             />
                           </td>
 
-                          {/* Column 1: Prompt Query */}
+                          {/* Column 1: Prompt Query & Geo/Market Pill */}
                           <td className="py-4 px-4 text-left border-r border-b border-slate-200/80 min-w-[280px]">
-                            <div className="flex flex-col gap-1">
+                            <div className="flex flex-col gap-1.5">
                               <div className="flex items-start gap-2.5">
                                 {/* Warning / Error Indicator with Tooltip */}
                                 {hasError && (
@@ -811,9 +783,9 @@ export default function PromptManagementPage() {
 
                                     {/* Human-Readable Error Tooltip */}
                                     {isTooltipOpen && (
-                                      <div className="absolute left-1/2 -translate-x-1/2 top-7 z-40 w-72 p-3 bg-slate-900 text-white rounded-xl shadow-2xl border border-slate-800 text-xs space-y-2 animate-in fade-in zoom-in-95 text-left">
-                                        <div className="flex items-center justify-between border-b border-slate-800 pb-1.5">
-                                          <span className="font-semibold text-amber-400 flex items-center gap-1.5">
+                                      <div className="absolute left-1/2 -translate-x-1/2 top-7 z-40 w-72 p-3 bg-white/95 backdrop-blur-md text-slate-800 rounded-xl shadow-xl shadow-slate-900/10 border border-slate-200/90 text-xs space-y-2 animate-in fade-in zoom-in-95 text-left">
+                                        <div className="flex items-center justify-between border-b border-slate-100 pb-1.5">
+                                          <span className="font-semibold text-amber-600 flex items-center gap-1.5">
                                             <ShieldAlert className="w-3.5 h-3.5" />
                                             {prompt.latestStatus === "failed"
                                               ? "Execution Failed"
@@ -827,23 +799,23 @@ export default function PromptManagementPage() {
                                         <div className="space-y-1.5">
                                           {prompt.latestErrorLog && prompt.latestErrorLog.length > 0 ? (
                                             prompt.latestErrorLog.map((err, i) => (
-                                              <div key={i} className="text-[11px] text-slate-300">
-                                                <span className="font-semibold text-rose-400">
+                                              <div key={i} className="text-[11px] text-slate-600">
+                                                <span className="font-semibold text-rose-600">
                                                   [{typeof err.engine === "string" ? err.engine : "ENGINE"}]:
                                                 </span>{" "}
                                                 {err.message}
                                               </div>
                                             ))
                                           ) : (
-                                            <p className="text-[11px] text-slate-400 italic">
+                                            <p className="text-[11px] text-slate-500 italic">
                                               Rate limited or timeout encountered during model generation.
                                             </p>
                                           )}
                                         </div>
 
-                                        <div className="pt-1 border-t border-slate-800 flex items-center justify-between text-[10px] text-slate-400">
+                                        <div className="pt-1.5 border-t border-slate-100 flex items-center justify-between text-[10px] text-slate-400">
                                           <span>Use Actions &rarr; Retry</span>
-                                          <span className="text-amber-300 font-medium">Auto-backoff active</span>
+                                          <span className="text-amber-600 font-medium">Auto-backoff active</span>
                                         </div>
                                       </div>
                                     )}
@@ -858,8 +830,19 @@ export default function PromptManagementPage() {
                                 </Link>
                               </div>
 
-                              {hasError && (
-                                <div>
+                              {/* Subtle Region / Market Persona Pill */}
+                              <div className="flex flex-wrap items-center gap-1.5">
+                                {prompt.geoMarket ? (
+                                  <span className="inline-flex items-center px-2 py-0.5 rounded-md text-[10px] font-medium bg-slate-100/90 text-slate-600 border border-slate-200/70">
+                                    {prompt.geoMarket}
+                                  </span>
+                                ) : (
+                                  <span className="inline-flex items-center px-2 py-0.5 rounded-md text-[10px] font-medium bg-slate-100/90 text-slate-600 border border-slate-200/70">
+                                    🇺🇸 US • General Activewear
+                                  </span>
+                                )}
+
+                                {hasError && (
                                   <span className={`inline-flex items-center gap-1 text-[10px] font-semibold uppercase tracking-wider px-2 py-0.5 rounded-full border ${
                                     prompt.latestStatus === "failed"
                                       ? "bg-rose-50 text-rose-700 border-rose-200"
@@ -869,15 +852,15 @@ export default function PromptManagementPage() {
                                       ? "All Engines Failed"
                                       : `Partial: ${prompt.failedEngines?.join(", ")} failed`}
                                   </span>
-                                </div>
-                              )}
+                                )}
+                              </div>
                             </div>
                           </td>
 
-                          {/* Column 2: Type of Prompt */}
+                          {/* Column 2: Prompt Category */}
                           <td className="py-3.5 px-3 text-center border-r border-b border-slate-200/80 whitespace-nowrap">
                             <div className="flex items-center justify-center">
-                              {renderPromptTypeBadge(prompt.promptType)}
+                              {renderCategoryBadge(prompt.promptCategory)}
                             </div>
                           </td>
 
@@ -895,20 +878,13 @@ export default function PromptManagementPage() {
                             </div>
                           </td>
 
-                          {/* Column 5: Prompt Category */}
+                          {/* Column 5: Engines (Horizontal compact row) */}
                           <td className="py-3.5 px-3 text-center border-r border-b border-slate-200/80 whitespace-nowrap">
-                            <div className="flex items-center justify-center">
-                              {renderCategoryBadge(prompt.promptCategory)}
-                            </div>
-                          </td>
-
-                          {/* Column 6: Engines */}
-                          <td className="py-3.5 px-3 text-center border-r border-b border-slate-200/80">
-                            <div className="flex flex-wrap items-center justify-center gap-1.5 max-w-xs mx-auto">
+                            <div className="flex items-center justify-center gap-1.5">
                               {prompt.targetEngines.map((engine) => {
                                 const isFailed = prompt.failedEngines?.includes(engine);
                                 return (
-                                  <div key={engine} className="relative">
+                                  <div key={engine} className="relative shrink-0">
                                     <EngineBadge engine={engine} size="sm" />
                                     {isFailed && (
                                       <span
@@ -922,7 +898,7 @@ export default function PromptManagementPage() {
                             </div>
                           </td>
 
-                          {/* Column 7: Frequency */}
+                          {/* Column 6: Frequency */}
                           <td className="py-3.5 px-3 text-center border-r border-b border-slate-200/80 whitespace-nowrap">
                             <div className="flex items-center justify-center">
                               <span
@@ -935,6 +911,35 @@ export default function PromptManagementPage() {
                                 <Calendar className="w-3 h-3 text-slate-400" />
                                 <span className="capitalize">{prompt.frequency}</span>
                               </span>
+                            </div>
+                          </td>
+
+                          {/* Column 7: Performance / Avg Rank */}
+                          <td className="py-3.5 px-3 text-center border-r border-b border-slate-200/80 whitespace-nowrap">
+                            <div className="flex items-center justify-center">
+                              {prompt.performanceRank ? (
+                                <span
+                                  className={`inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-semibold border ${
+                                    prompt.performanceRank.variant === "green"
+                                      ? "bg-emerald-50 text-emerald-700 border-emerald-200/80"
+                                      : prompt.performanceRank.variant === "blue"
+                                      ? "bg-blue-50 text-blue-700 border-blue-200/80"
+                                      : "bg-slate-100 text-slate-500 border-slate-200"
+                                  }`}
+                                >
+                                  {prompt.performanceRank.variant === "green" && (
+                                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 shrink-0" />
+                                  )}
+                                  {prompt.performanceRank.variant === "blue" && (
+                                    <span className="w-1.5 h-1.5 rounded-full bg-blue-500 shrink-0" />
+                                  )}
+                                  <span>{prompt.performanceRank.label}</span>
+                                </span>
+                              ) : (
+                                <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-medium bg-slate-100 text-slate-500 border border-slate-200">
+                                  Unranked
+                                </span>
+                              )}
                             </div>
                           </td>
 
@@ -956,13 +961,21 @@ export default function PromptManagementPage() {
                           </td>
 
                           {/* Column 9: Actions Menu */}
-                          <td className="py-3.5 px-4 text-center border-b border-slate-200/80 whitespace-nowrap relative">
-                            <div className="flex items-center justify-center">
+                          <td className="py-3.5 px-3 text-center border-b border-slate-200/80 whitespace-nowrap relative">
+                            <div className="flex items-center justify-center gap-1.5">
+                              <Link
+                                href={`/reports/prompts?promptId=${prompt.id}`}
+                                className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-semibold text-slate-700 hover:text-indigo-600 bg-slate-100/90 hover:bg-slate-200/80 border border-slate-200/70 transition-colors"
+                              >
+                                <span>Inspect</span>
+                                <span className="text-[10px]">&rarr;</span>
+                              </Link>
                               <button
                                 onClick={() =>
                                   setActiveMenuId(isMenuOpen ? null : prompt.id)
                                 }
-                                className="p-1.5 rounded-lg text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition-colors cursor-pointer"
+                                className="p-1 rounded-lg text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition-colors cursor-pointer"
+                                title="More actions"
                               >
                                 <MoreVertical className="w-4 h-4" />
                               </button>

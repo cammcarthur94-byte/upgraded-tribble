@@ -134,42 +134,6 @@ export default function BrandInsightsOverviewPage() {
               <h2 className="text-base font-semibold text-slate-900">
                 Share of Voice
               </h2>
-              {/* Segmented control toggle matching reference image 1 */}
-              <div className="inline-flex items-center p-0.5 bg-slate-100/80 rounded-lg text-[11px] font-medium text-slate-600">
-                <button
-                  type="button"
-                  onClick={() => setDateRange("7d")}
-                  className={`px-2.5 py-1 rounded-md transition-all ${
-                    dateRange === "7d"
-                      ? "bg-white text-slate-900 shadow-xs font-semibold"
-                      : "hover:text-slate-900 text-slate-500"
-                  }`}
-                >
-                  7 Days
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setDateRange("30d")}
-                  className={`px-2.5 py-1 rounded-md transition-all ${
-                    dateRange === "30d" || (!dateRange && dateRange !== "7d" && dateRange !== "90d")
-                      ? "bg-white text-slate-900 shadow-xs font-semibold"
-                      : "hover:text-slate-900 text-slate-500"
-                  }`}
-                >
-                  30 Days
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setDateRange("90d")}
-                  className={`px-2.5 py-1 rounded-md transition-all ${
-                    dateRange === "90d"
-                      ? "bg-white text-slate-900 shadow-xs font-semibold"
-                      : "hover:text-slate-900 text-slate-500"
-                  }`}
-                >
-                  90 Days
-                </button>
-              </div>
             </div>
             <p className="text-xs text-slate-400 font-normal">
               Multi-engine brand vs competitor visibility over time

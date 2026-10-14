@@ -324,7 +324,7 @@ export async function getProductVisibilityAnalyticsAction(
       brandName: "Nike",
       domain: "nike.com",
       sharePercentage: 3.9,
-      productCount: 388,
+      productCount: 718,
       isCurrentBrand: false,
     },
     {
@@ -332,7 +332,7 @@ export async function getProductVisibilityAnalyticsAction(
       brandName: "Lululemon",
       domain: "lululemon.com",
       sharePercentage: 3.1,
-      productCount: 277,
+      productCount: 571,
       isCurrentBrand: false,
     },
     {
@@ -340,7 +340,7 @@ export async function getProductVisibilityAnalyticsAction(
       brandName: "Alo Yoga",
       domain: "aloyoga.com",
       sharePercentage: 2.9,
-      productCount: 280,
+      productCount: 534,
       isCurrentBrand: false,
     },
     {
@@ -348,7 +348,7 @@ export async function getProductVisibilityAnalyticsAction(
       brandName: "Under Armour",
       domain: "underarmour.com",
       sharePercentage: 2.0,
-      productCount: 282,
+      productCount: 368,
       isCurrentBrand: false,
     },
     {
@@ -356,7 +356,7 @@ export async function getProductVisibilityAnalyticsAction(
       brandName: "Vuori",
       domain: "vuori.com",
       sharePercentage: 1.9,
-      productCount: 149,
+      productCount: 350,
       isCurrentBrand: false,
     },
     {
@@ -364,7 +364,7 @@ export async function getProductVisibilityAnalyticsAction(
       brandName: "Athleta",
       domain: "athleta.com",
       sharePercentage: 1.8,
-      productCount: 218,
+      productCount: 331,
       isCurrentBrand: false,
     },
     {
@@ -372,7 +372,7 @@ export async function getProductVisibilityAnalyticsAction(
       brandName: "Sweaty Betty",
       domain: "sweatybetty.com",
       sharePercentage: 1.7,
-      productCount: 139,
+      productCount: 313,
       isCurrentBrand: false,
     },
     {
@@ -380,7 +380,7 @@ export async function getProductVisibilityAnalyticsAction(
       brandName: "Gym People",
       domain: "thegympeople.com",
       sharePercentage: 1.3,
-      productCount: 140,
+      productCount: 239,
       isCurrentBrand: false,
     },
   ];

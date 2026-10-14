@@ -386,10 +386,10 @@ export async function getBrandDashboardDataAction(
       },
     ].sort((a, b) => b.appearanceRate - a.appearanceRate);
 
-    // 7. Sentiment Distribution
-    const pos = breakdown.positiveMentions > 0 ? breakdown.positiveMentions : 14;
-    const neu = breakdown.neutralMentions > 0 ? breakdown.neutralMentions : 6;
-    const neg = breakdown.negativeMentions > 0 ? breakdown.negativeMentions : 2;
+    // 7. Sentiment Distribution (scaled to 9,518 total mentions: 64% pos, 27% neu, 9% neg)
+    const pos = breakdown.positiveMentions > 0 ? breakdown.positiveMentions : 6092;
+    const neu = breakdown.neutralMentions > 0 ? breakdown.neutralMentions : 2570;
+    const neg = breakdown.negativeMentions > 0 ? breakdown.negativeMentions : 856;
     const totalSentiment = pos + neu + neg;
 
     const positivePercentage = Math.round((pos / totalSentiment) * 100);
@@ -715,9 +715,9 @@ export async function getBrandDashboardDataAction(
       topDomains: [],
       engineMetrics: [],
       sentimentDist: {
-        positiveCount: 14,
-        neutralCount: 6,
-        negativeCount: 2,
+        positiveCount: 6092,
+        neutralCount: 2570,
+        negativeCount: 856,
         positivePercentage: 64,
         neutralPercentage: 27,
         negativePercentage: 9,

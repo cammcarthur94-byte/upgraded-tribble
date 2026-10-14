@@ -121,11 +121,13 @@ export function BrandsMerchantsView({
   const currentBrandItem = uniqueCompetitors.find((c) => c.isCurrentBrand);
   const currentProdCount = currentBrandItem?.productCount || 7456;
 
-  // Compute breakdown list for Card 1 (Top 4 brands + Other Brands remainder)
+  // Compute breakdown list for Card 1 (Top 4 brands + Other Brands remainder across 18,410 total products)
+  const TOTAL_CATALOG_PRODUCTS = 18410;
   const top4Competitors = uniqueCompetitors.slice(0, 4);
   const top4TotalShare = top4Competitors.reduce((acc, c) => acc + c.sharePercentage, 0);
   const otherShare = Math.max(0, Number((100 - top4TotalShare).toFixed(1)));
-  const otherProdCount = uniqueCompetitors.slice(4).reduce((acc, c) => acc + c.productCount, 0);
+  const top4ProdCount = top4Competitors.reduce((acc, c) => acc + c.productCount, 0);
+  const otherProdCount = Math.max(0, TOTAL_CATALOG_PRODUCTS - top4ProdCount);
 
   const breakdownItems = [
     ...top4Competitors.map((c, i) => ({
@@ -141,7 +143,7 @@ export function BrandsMerchantsView({
       name: "Other Brands",
       domain: "",
       share: otherShare,
-      prodCount: otherProdCount || 928,
+      prodCount: otherProdCount || 9130,
       isCurrentBrand: false,
       color: "#cbd5e1",
       dotClass: "bg-slate-300",
@@ -431,13 +433,19 @@ export function BrandsMerchantsView({
                   content={({ active, payload, label }) => {
                     if (active && payload && payload.length) {
                       return (
-                        <div className="bg-slate-900 text-white p-2.5 rounded-xl text-xs shadow-xl border border-slate-800 space-y-1">
-                          <div className="flex items-center justify-between text-[11px] text-slate-400 gap-4">
+                        <div className="bg-white/95 backdrop-blur-sm rounded-xl border border-slate-200/90 p-3 shadow-lg shadow-slate-900/5 text-xs min-w-[140px] pointer-events-none">
+                          <div className="flex items-center justify-between text-[11px] font-medium text-slate-500 border-b border-slate-100 pb-1.5 mb-1.5 gap-3">
                             <span>{label}</span>
-                            <span className="text-emerald-400 font-medium">{currentBrandName}</span>
+                            <span className="flex items-center gap-1.5 font-semibold text-slate-800">
+                              <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
+                              {currentBrandName}
+                            </span>
                           </div>
-                          <div className="font-mono font-bold text-sm text-emerald-400">
-                            {Number(payload[0].value).toFixed(1)}% Visibility
+                          <div className="flex items-baseline justify-between gap-2">
+                            <span className="text-slate-500 text-[11px]">Visibility</span>
+                            <span className="font-mono font-bold text-sm text-emerald-600">
+                              {Number(payload[0].value).toFixed(1)}%
+                            </span>
                           </div>
                         </div>
                       );

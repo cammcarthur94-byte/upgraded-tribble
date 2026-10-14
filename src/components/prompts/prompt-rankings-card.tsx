@@ -22,7 +22,7 @@ export function PromptRankingsCard({
           <h3 className="text-base font-bold text-slate-900">Rankings</h3>
           <div className="group relative flex items-center">
             <Info className="w-3.5 h-3.5 text-slate-400 cursor-help" />
-            <div className="absolute left-0 bottom-full mb-1.5 hidden group-hover:block z-20 w-56 p-2 text-[11px] leading-tight text-white bg-slate-900 rounded-md shadow-lg pointer-events-none">
+            <div className="absolute left-0 bottom-full mb-2 hidden group-hover:block z-20 w-64 p-2.5 text-[11px] leading-relaxed text-slate-700 bg-white/95 backdrop-blur-sm rounded-xl border border-slate-200/90 shadow-lg shadow-slate-900/5 pointer-events-none animate-in fade-in">
               Top brands ranked across AI engines for this prompt query based on visibility, share of voice, and sentiment.
             </div>
           </div>

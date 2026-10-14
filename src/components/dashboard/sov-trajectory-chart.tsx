@@ -44,7 +44,6 @@ export function SovTrajectoryChart({
   ];
 
   const chartData = data && data.length > 0 ? data : defaultData;
-  const [selectedRange, setSelectedRange] = useState("30 Days");
 
   return (
     <div className="w-full h-full flex flex-col justify-between">
@@ -80,33 +79,33 @@ export function SovTrajectoryChart({
                 if (active && payload && payload.length) {
                   const p = payload[0].payload as SovTrajectoryPoint;
                   return (
-                    <div className="bg-slate-900/95 backdrop-blur-md text-white p-2.5 rounded-xl text-xs shadow-xl border border-slate-800 space-y-1.5 min-w-[150px]">
-                      <div className="text-[10px] text-slate-400 font-medium border-b border-slate-800 pb-1">
+                    <div className="bg-white/95 backdrop-blur-sm p-3 rounded-xl text-xs shadow-lg shadow-slate-900/5 border border-slate-200/90 space-y-1.5 min-w-[165px] pointer-events-none">
+                      <div className="text-[11px] font-semibold text-slate-500 border-b border-slate-100 pb-1.5">
                         {label}
                       </div>
-                      <div className="flex items-center justify-between text-emerald-400 font-semibold text-xs">
+                      <div className="flex items-center justify-between text-slate-900 font-semibold text-xs bg-emerald-50/70 px-2 py-1 rounded-lg border border-emerald-100">
                         <span className="flex items-center gap-1.5">
-                          <span className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
+                          <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
                           {brandName}
                         </span>
-                        <span className="font-mono">{p.sov}%</span>
+                        <span className="font-mono text-emerald-700 font-bold">{p.sov}%</span>
                       </div>
                       {p.competitor1Sov !== undefined && (
-                        <div className="flex items-center justify-between text-slate-300 text-[11px]">
+                        <div className="flex items-center justify-between text-slate-600 text-[11px] px-1 py-0.5">
                           <span className="flex items-center gap-1.5">
                             <span className="w-1.5 h-1.5 rounded-full bg-slate-400" />
                             {p.competitor1Name || comp1Name}
                           </span>
-                          <span className="font-mono">{p.competitor1Sov}%</span>
+                          <span className="font-mono text-slate-700 font-semibold">{p.competitor1Sov}%</span>
                         </div>
                       )}
                       {p.competitor2Sov !== undefined && (
-                        <div className="flex items-center justify-between text-amber-300 text-[11px]">
+                        <div className="flex items-center justify-between text-slate-600 text-[11px] px-1 py-0.5">
                           <span className="flex items-center gap-1.5">
                             <span className="w-1.5 h-1.5 rounded-full bg-amber-400" />
                             {p.competitor2Name || comp2Name}
                           </span>
-                          <span className="font-mono">{p.competitor2Sov}%</span>
+                          <span className="font-mono text-slate-700 font-semibold">{p.competitor2Sov}%</span>
                         </div>
                       )}
                     </div>

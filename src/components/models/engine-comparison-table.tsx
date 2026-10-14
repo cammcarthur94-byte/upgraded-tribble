@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
+import Link from "next/link";
 import { EngineInsightItem } from "@/lib/scoring/modelInsights";
 import { Favicon, EngineFavicon } from "@/components/ui/favicon";
 import {
@@ -15,6 +16,8 @@ import {
   XCircle,
   Clock,
   Layers,
+  Link2,
+  ArrowRight,
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 
@@ -30,9 +33,15 @@ export function EngineComparisonTable({
   const [expandedEngine, setExpandedEngine] = useState<string | null>(
     engines[0]?.engine || null
   );
+  const [toastMessage, setToastMessage] = useState<string | null>(null);
 
   const toggleExpand = (engineKey: string) => {
     setExpandedEngine((prev) => (prev === engineKey ? null : engineKey));
+  };
+
+  const handleCreateGrowthTask = (queryText: string, engineName: string) => {
+    setToastMessage(`Growth task queued for "${queryText.slice(0, 32)}..." on ${engineName}! Added to Task Tracker.`);
+    setTimeout(() => setToastMessage(null), 4000);
   };
 
   return (
@@ -242,7 +251,7 @@ export function EngineComparisonTable({
                                 {item.omittedQueries.map((omit, oIdx) => (
                                   <div
                                     key={omit.id || oIdx}
-                                    className="p-3 rounded-lg border border-slate-100 bg-rose-50/20 hover:bg-rose-50/40 transition-colors"
+                                    className="p-3 rounded-lg border border-rose-100 bg-rose-50/20 hover:bg-rose-50/40 transition-colors"
                                   >
                                     <div className="flex items-start justify-between gap-2 mb-1">
                                       <span className="font-semibold text-slate-900 text-xs leading-snug">
@@ -271,11 +280,38 @@ export function EngineComparisonTable({
                                     <p className="text-[11px] text-slate-500 leading-relaxed italic">
                                       {omit.snippet}
                                     </p>
-                                    <div className="flex items-center gap-1.5 text-[10px] text-slate-400 mt-2">
-                                      <Clock className="w-3 h-3 text-slate-400" />
-                                      <span>
-                                        Audited {new Date(omit.timestamp).toLocaleDateString()}
-                                      </span>
+
+                                    {/* Actionable Footer: Missing Source Pill & Create Task Button */}
+                                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pt-2.5 mt-2.5 border-t border-rose-100/80">
+                                      <div className="flex items-center gap-2 flex-wrap">
+                                        <div className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-white border border-rose-200/80 text-[10px] text-slate-600 font-mono shadow-2xs">
+                                          <Link2 className="w-3 h-3 text-rose-500 shrink-0" />
+                                          <span>
+                                            Cited via:{" "}
+                                            {omit.missingSources && omit.missingSources.length > 0
+                                              ? omit.missingSources.join(", ")
+                                              : "editorial guides"}
+                                          </span>
+                                        </div>
+                                        <div className="flex items-center gap-1 text-[10px] text-slate-400">
+                                          <Clock className="w-3 h-3 text-slate-400" />
+                                          <span>
+                                            Audited {new Date(omit.timestamp).toLocaleDateString()}
+                                          </span>
+                                        </div>
+                                      </div>
+
+                                      <button
+                                        type="button"
+                                        onClick={(e) => {
+                                          e.stopPropagation();
+                                          handleCreateGrowthTask(omit.query, item.displayName);
+                                        }}
+                                        className="inline-flex items-center gap-1 px-2.5 py-1 rounded-md text-[11px] font-semibold text-indigo-700 hover:text-indigo-800 bg-indigo-50 hover:bg-indigo-100 border border-indigo-200/80 transition-colors shrink-0 self-end sm:self-auto cursor-pointer shadow-2xs"
+                                      >
+                                        <span>+ Create Growth Task</span>
+                                        <ArrowRight className="w-3 h-3" />
+                                      </button>
                                     </div>
                                   </div>
                                 ))}
@@ -292,6 +328,20 @@ export function EngineComparisonTable({
           </tbody>
         </table>
       </div>
+
+      {/* Floating Toast Notification */}
+      {toastMessage && (
+        <div className="fixed bottom-6 right-6 z-50 bg-slate-900 text-white text-xs px-4 py-3 rounded-xl shadow-xl flex items-center gap-3 animate-in fade-in slide-in-from-bottom-2 border border-slate-800">
+          <Sparkles className="w-4 h-4 text-emerald-400 shrink-0" />
+          <span className="font-medium">{toastMessage}</span>
+          <Link
+            href="/tools/growth"
+            className="ml-1 px-2.5 py-1 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white font-semibold transition-colors shrink-0"
+          >
+            View Tasks &rarr;
+          </Link>
+        </div>
+      )}
     </div>
   );
 }

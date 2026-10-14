@@ -84,10 +84,11 @@ export function ModelComparisonChart({ radarData }: ModelComparisonChartProps) {
                 tick={{ fill: "#475569", fontSize: 11, fontWeight: 500 }}
               />
               <PolarRadiusAxis
-                angle={30}
+                angle={90}
                 domain={[0, 100]}
                 stroke="#cbd5e1"
-                tick={{ fill: "#94a3b8", fontSize: 10 }}
+                tick={false}
+                axisLine={false}
               />
               <Radar
                 name="Perplexity"
@@ -125,22 +126,24 @@ export function ModelComparisonChart({ radarData }: ModelComparisonChartProps) {
                 content={({ active, payload, label }) => {
                   if (active && payload && payload.length) {
                     return (
-                      <div className="rounded-xl border border-slate-200 bg-white p-3 shadow-lg text-xs space-y-1">
-                        <p className="font-semibold text-slate-900 mb-1.5 pb-1 border-b border-slate-100">
-                          {label} (0 - 100)
+                      <div className="bg-white/95 backdrop-blur-sm rounded-xl border border-slate-200/90 p-3 shadow-lg shadow-slate-900/5 text-xs space-y-1.5 min-w-[160px] pointer-events-none">
+                        <p className="font-semibold text-slate-800 text-[11px] pb-1.5 border-b border-slate-100 flex items-center justify-between">
+                          <span>{label}</span>
+                          <span className="text-[10px] text-slate-400 font-mono">0 - 100</span>
                         </p>
                         {payload.map((entry: any) => (
                           <div
                             key={entry.name}
-                            className="flex items-center justify-between gap-4"
+                            className="flex items-center justify-between gap-3 text-[11px]"
                           >
-                            <span
-                              className="font-medium"
-                              style={{ color: entry.stroke }}
-                            >
-                              {entry.name}:
+                            <span className="flex items-center gap-1.5 text-slate-600 font-medium">
+                              <span
+                                className="w-1.5 h-1.5 rounded-full shrink-0"
+                                style={{ backgroundColor: entry.stroke || entry.color }}
+                              />
+                              {entry.name}
                             </span>
-                            <span className="font-bold text-slate-800">
+                            <span className="font-mono font-bold text-slate-900">
                               {entry.value}
                             </span>
                           </div>
@@ -182,23 +185,25 @@ export function ModelComparisonChart({ radarData }: ModelComparisonChartProps) {
                 content={({ active, payload, label }) => {
                   if (active && payload && payload.length) {
                     return (
-                      <div className="rounded-xl border border-slate-200 bg-white p-3 shadow-lg text-xs space-y-1">
-                        <p className="font-semibold text-slate-900 mb-1.5 pb-1 border-b border-slate-100">
-                          {label}
+                      <div className="bg-white/95 backdrop-blur-sm rounded-xl border border-slate-200/90 p-3 shadow-lg shadow-slate-900/5 text-xs space-y-1.5 min-w-[160px] pointer-events-none">
+                        <p className="font-semibold text-slate-800 text-[11px] pb-1.5 border-b border-slate-100 flex items-center justify-between">
+                          <span>{label}</span>
+                          <span className="text-[10px] text-slate-400 font-mono">Score</span>
                         </p>
                         {payload.map((entry: any) => (
                           <div
                             key={entry.name}
-                            className="flex items-center justify-between gap-4"
+                            className="flex items-center justify-between gap-3 text-[11px]"
                           >
-                            <span
-                              className="font-medium"
-                              style={{ color: entry.fill }}
-                            >
-                              {entry.name}:
+                            <span className="flex items-center gap-1.5 text-slate-600 font-medium">
+                              <span
+                                className="w-1.5 h-1.5 rounded-full shrink-0"
+                                style={{ backgroundColor: entry.fill || entry.color }}
+                              />
+                              {entry.name}
                             </span>
-                            <span className="font-bold text-slate-800">
-                              {entry.value} / 100
+                            <span className="font-mono font-bold text-slate-900">
+                              {entry.value} <span className="text-[10px] font-normal text-slate-400">/ 100</span>
                             </span>
                           </div>
                         ))}

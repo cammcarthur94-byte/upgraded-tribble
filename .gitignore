@@ -42,3 +42,4 @@ scratch/
 error_*.png
 *.pyc
 __pycache__/
+.neon

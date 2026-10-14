@@ -83,16 +83,19 @@ export function DomainAuthorityDonutChart({
                 if (active && payload && payload.length) {
                   const data = payload[0].payload;
                   return (
-                    <div className="bg-slate-900/90 backdrop-blur-md text-white px-3 py-1.5 rounded-xl text-xs shadow-xl border border-slate-800 space-y-0.5 pointer-events-none z-50">
-                      <div className="flex items-center gap-1.5 font-semibold">
+                    <div className="bg-white/95 backdrop-blur-sm rounded-xl border border-slate-200/90 px-3 py-2 shadow-lg shadow-slate-900/5 text-xs pointer-events-none z-50 min-w-[130px]">
+                      <div className="flex items-center gap-1.5 font-semibold text-slate-800 pb-1 border-b border-slate-100">
                         <span
-                          className="w-2 h-2 rounded-full"
+                          className="w-2 h-2 rounded-full shrink-0"
                           style={{ backgroundColor: data.color }}
                         />
-                        <span>{data.name}</span>
+                        <span className="truncate">{data.name}</span>
                       </div>
-                      <div className="text-[11px] text-slate-300 font-mono">
-                        {data.percentage}%
+                      <div className="flex items-baseline justify-between pt-1 gap-2">
+                        <span className="text-[11px] text-slate-500">Share</span>
+                        <span className="font-mono font-bold text-xs text-slate-900">
+                          {data.percentage}%
+                        </span>
                       </div>
                     </div>
                   );

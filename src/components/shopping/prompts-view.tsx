@@ -314,14 +314,14 @@ export function PromptsView({
 
                                   {/* Quick Product Search */}
                                   <div className="relative">
-                                    <Search className="w-3 h-3 text-slate-400 absolute left-2.5 top-2 pointer-events-none" />
+                                    <Search className="w-3 h-3 text-slate-400 absolute left-2.5 top-1/2 -translate-y-1/2 pointer-events-none" />
                                     <input
                                       type="text"
                                       placeholder="Filter products..."
                                       value={productQuery}
                                       onClick={(e) => e.stopPropagation()}
                                       onChange={(e) => setProductQuery(e.target.value)}
-                                      className="pl-7 pr-2.5 py-1 text-xs bg-white border border-slate-200 rounded-lg text-slate-800 placeholder-slate-400 focus:outline-hidden focus:ring-1 focus:ring-indigo-500 w-36 sm:w-44"
+                                      className="pl-8 pr-2.5 py-1 text-xs bg-white border border-slate-200 rounded-lg text-slate-800 placeholder-slate-400 focus:outline-hidden focus:ring-1 focus:ring-indigo-500 w-36 sm:w-44"
                                     />
                                   </div>
                                 </div>

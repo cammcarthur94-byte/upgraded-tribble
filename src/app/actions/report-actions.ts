@@ -982,7 +982,8 @@ export async function getCitationsExplorerDataAction(
       {
         domain: "reddit.com",
         isBrandOwned: false,
-        citationCount: 22,
+        citationCount: 2940,
+        urlSnapshotCount: 68,
         referencingEngines: ["perplexity", "chatgpt"],
         firstSeen: new Date(Date.now() - 1000 * 60 * 60 * 24 * 14).toISOString(),
         lastSeen: new Date(Date.now() - 1000 * 60 * 45).toISOString(),
@@ -1023,7 +1024,8 @@ export async function getCitationsExplorerDataAction(
       {
         domain: brand.domain || "gymshark.com",
         isBrandOwned: true,
-        citationCount: 16,
+        citationCount: 2350,
+        urlSnapshotCount: 54,
         referencingEngines: ["chatgpt", "perplexity", "gemini", "claude"],
         firstSeen: new Date(Date.now() - 1000 * 60 * 60 * 24 * 20).toISOString(),
         lastSeen: new Date(Date.now() - 1000 * 60 * 30).toISOString(),
@@ -1055,7 +1057,8 @@ export async function getCitationsExplorerDataAction(
       {
         domain: "youtube.com",
         isBrandOwned: false,
-        citationCount: 11,
+        citationCount: 1180,
+        urlSnapshotCount: 38,
         referencingEngines: ["gemini", "chatgpt"],
         firstSeen: new Date(Date.now() - 1000 * 60 * 60 * 24 * 12).toISOString(),
         lastSeen: new Date(Date.now() - 1000 * 60 * 60 * 2).toISOString(),
@@ -1078,7 +1081,8 @@ export async function getCitationsExplorerDataAction(
       {
         domain: "womenshealthmag.com",
         isBrandOwned: false,
-        citationCount: 9,
+        citationCount: 820,
+        urlSnapshotCount: 26,
         referencingEngines: ["perplexity", "gemini"],
         firstSeen: new Date(Date.now() - 1000 * 60 * 60 * 24 * 10).toISOString(),
         lastSeen: new Date(Date.now() - 1000 * 60 * 60 * 5).toISOString(),
@@ -1101,7 +1105,8 @@ export async function getCitationsExplorerDataAction(
       {
         domain: "runnersworld.com",
         isBrandOwned: false,
-        citationCount: 7,
+        citationCount: 490,
+        urlSnapshotCount: 19,
         referencingEngines: ["gemini", "claude"],
         firstSeen: new Date(Date.now() - 1000 * 60 * 60 * 24 * 8).toISOString(),
         lastSeen: new Date(Date.now() - 1000 * 60 * 60 * 12).toISOString(),
@@ -1124,7 +1129,8 @@ export async function getCitationsExplorerDataAction(
       {
         domain: "barbend.com",
         isBrandOwned: false,
-        citationCount: 6,
+        citationCount: 360,
+        urlSnapshotCount: 15,
         referencingEngines: ["claude", "chatgpt"],
         firstSeen: new Date(Date.now() - 1000 * 60 * 60 * 24 * 5).toISOString(),
         lastSeen: new Date(Date.now() - 1000 * 60 * 60 * 18).toISOString(),
@@ -1147,7 +1153,8 @@ export async function getCitationsExplorerDataAction(
       {
         domain: "gq.com",
         isBrandOwned: false,
-        citationCount: 4,
+        citationCount: 256,
+        urlSnapshotCount: 12,
         referencingEngines: ["claude", "perplexity"],
         firstSeen: new Date(Date.now() - 1000 * 60 * 60 * 24 * 4).toISOString(),
         lastSeen: new Date(Date.now() - 1000 * 60 * 60 * 20).toISOString(),
@@ -1169,18 +1176,15 @@ export async function getCitationsExplorerDataAction(
       },
     ];
 
-    const totalCount = seedDomains.reduce((sum, d) => sum + d.citationCount, 0);
-    const ownedCount = seedDomains.find((d) => d.isBrandOwned)?.citationCount || 0;
-
     const resultData: CitationsExplorerSummary = {
-      totalSourcesCited: totalCount,
-      uniqueReferringDomains: seedDomains.length,
-      ownedSourceRatio: Math.round((ownedCount / totalCount) * 100),
+      totalSourcesCited: 342,
+      uniqueReferringDomains: 51,
+      ownedSourceRatio: 28,
       domains: seedDomains,
       competitorShare: [
-        { brandName: brand.brandName, citationCount: totalCount, percentage: 42, isCurrentBrand: true },
-        { brandName: "Nike", citationCount: 48, percentage: 34, isCurrentBrand: false },
-        { brandName: "Lululemon", citationCount: 34, percentage: 24, isCurrentBrand: false },
+        { brandName: brand.brandName, citationCount: 3568, percentage: 42, isCurrentBrand: true },
+        { brandName: "Nike", citationCount: 2886, percentage: 34, isCurrentBrand: false },
+        { brandName: "Lululemon", citationCount: 2038, percentage: 24, isCurrentBrand: false },
       ],
       missedOpportunities: [
         {

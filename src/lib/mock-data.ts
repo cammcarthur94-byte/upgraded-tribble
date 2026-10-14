@@ -2,7 +2,7 @@ import { UserProfile, BrandData, PromptItem } from "./types";
 
 export const MOCK_USER: UserProfile = {
   id: "user-1",
-  email: "cam@beaconmetrics.io",
+  email: "cam@recomnd.ai",
   fullName: "Cameron M.",
   role: "OWNER",
 };
@@ -66,6 +66,11 @@ export const INITIAL_PROMPTS: PromptItem[] = [
     brandedType: "Unbranded",
     searchIntent: "Commercial",
     promptCategory: "Top of Funnel Discovery",
+    geoMarket: "🇺🇸 US • Women's Activewear",
+    performanceRank: {
+      label: "#1 Pick (3/4)",
+      variant: "green",
+    },
     lastExecutedAt: new Date(Date.now() - 1000 * 60 * 45).toISOString(), // 45 mins ago
     createdAt: new Date(Date.now() - 1000 * 60 * 60 * 24 * 3).toISOString(),
     updatedAt: new Date(Date.now() - 1000 * 60 * 60 * 24 * 3).toISOString(),
@@ -80,6 +85,11 @@ export const INITIAL_PROMPTS: PromptItem[] = [
     brandedType: "Branded",
     searchIntent: "Commercial",
     promptCategory: "Product Comparison",
+    geoMarket: "🇺🇸 US • Women's Gymwear",
+    performanceRank: {
+      label: "#2 Avg • 68% SoV",
+      variant: "blue",
+    },
     lastExecutedAt: new Date(Date.now() - 1000 * 60 * 60 * 3).toISOString(), // 3 hours ago
     latestStatus: "partial_success",
     failedEngines: ["claude"],
@@ -98,13 +108,18 @@ export const INITIAL_PROMPTS: PromptItem[] = [
   {
     id: "p-3",
     brandId: "brand-1",
-    queryText: "Top recommended athletic apparel brands for young fitness enthusiasts and weightlifters in 2025",
+    queryText: "Top recommended athletic apparel brands for young fitness enthusiasts and weightlifters in 2026",
     frequency: "weekly",
     targetEngines: ["chatgpt", "gemini", "perplexity"],
     promptType: "Buying Guide",
     brandedType: "Unbranded",
     searchIntent: "Informational",
     promptCategory: "Buying Guide",
+    geoMarket: "🇬🇧 UK • Gym & Lifting",
+    performanceRank: {
+      label: "#1 Pick (3/3)",
+      variant: "green",
+    },
     lastExecutedAt: new Date(Date.now() - 1000 * 60 * 60 * 26).toISOString(), // 1 day ago
     createdAt: new Date(Date.now() - 1000 * 60 * 60 * 24 * 7).toISOString(),
     updatedAt: new Date(Date.now() - 1000 * 60 * 60 * 24 * 7).toISOString(),
@@ -119,6 +134,11 @@ export const INITIAL_PROMPTS: PromptItem[] = [
     brandedType: "Unbranded",
     searchIntent: "Transactional",
     promptCategory: "Feature Reviews",
+    geoMarket: "🇺🇸 US • Bodybuilding & Mens",
+    performanceRank: {
+      label: "Unranked",
+      variant: "gray",
+    },
     lastExecutedAt: null, // Never executed
     createdAt: new Date(Date.now() - 1000 * 60 * 60 * 2).toISOString(),
     updatedAt: new Date(Date.now() - 1000 * 60 * 60 * 2).toISOString(),
@@ -133,6 +153,11 @@ export const INITIAL_PROMPTS: PromptItem[] = [
     brandedType: "Branded",
     searchIntent: "Commercial",
     promptCategory: "Competitor Alternatives",
+    geoMarket: "🇬🇧 UK • Activewear Alternatives",
+    performanceRank: {
+      label: "#1 Pick (4/4)",
+      variant: "green",
+    },
     lastExecutedAt: new Date(Date.now() - 1000 * 60 * 60 * 12).toISOString(),
     createdAt: new Date(Date.now() - 1000 * 60 * 60 * 24 * 2).toISOString(),
     updatedAt: new Date(Date.now() - 1000 * 60 * 60 * 24 * 2).toISOString(),

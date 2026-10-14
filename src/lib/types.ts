@@ -84,6 +84,11 @@ export interface PromptItem {
   latestStatus?: PromptResultStatus;
   latestErrorLog?: ErrorLogItem[];
   failedEngines?: SupportedEngine[];
+  geoMarket?: string;
+  performanceRank?: {
+    label: string;
+    variant: "green" | "blue" | "gray";
+  };
   createdAt: string;
   updatedAt: string;
 }
@@ -461,6 +466,7 @@ export interface DomainIntelligenceItem {
   sentimentScore?: number; // % positive (e.g., 78)
   trendChange?: number; // weekly momentum % (e.g., +15)
   competitorCitations?: Record<string, number>;
+  urlSnapshotCount?: number;
 }
 
 export interface QueryIntentCluster {

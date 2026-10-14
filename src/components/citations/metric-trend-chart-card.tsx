@@ -140,14 +140,19 @@ export function MetricTrendChartCard({
                 if (active && payload && payload.length) {
                   const val = payload[0].value as number;
                   return (
-                    <div className="bg-slate-900/95 backdrop-blur-xs text-white p-3 rounded-xl text-xs shadow-xl border border-slate-800 space-y-1.5 min-w-[170px]">
-                      <div className="flex items-center justify-between text-[11px] text-slate-400 font-medium border-b border-slate-800 pb-1">
+                    <div className="bg-white/95 backdrop-blur-sm p-3 rounded-xl text-xs shadow-lg shadow-slate-900/5 border border-slate-200/90 space-y-1.5 min-w-[160px] pointer-events-none">
+                      <div className="flex items-center justify-between text-[11px] font-medium text-slate-500 border-b border-slate-100 pb-1.5 gap-3">
                         <span>{label}</span>
-                        <span className="text-emerald-400 font-semibold">{brandName}</span>
+                        <span className="flex items-center gap-1.5 font-semibold text-slate-800">
+                          <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
+                          {brandName}
+                        </span>
                       </div>
-                      <div className="flex items-center justify-between gap-4 font-mono font-bold text-sm text-emerald-400 pt-0.5">
-                        <span>{title}:</span>
-                        <span>{val.toLocaleString()}</span>
+                      <div className="flex items-baseline justify-between gap-3 pt-0.5">
+                        <span className="text-slate-500 text-[11px]">{title}</span>
+                        <span className="font-mono font-bold text-sm text-emerald-600">
+                          {val.toLocaleString()}
+                        </span>
                       </div>
                     </div>
                   );
