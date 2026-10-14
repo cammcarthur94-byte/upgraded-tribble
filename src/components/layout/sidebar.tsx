@@ -21,7 +21,6 @@ import {
   User,
   ExternalLink,
   Lock,
-  ArrowLeft,
 } from "lucide-react";
 import { BrandSelector } from "./brand-selector";
 import { QuickSearchModal } from "./quick-search-modal";
@@ -83,9 +82,9 @@ export function Sidebar({
   // Top-level Dashboard / Overview
   const dashboardNav = {
     title: "Dashboard",
-    href: "/dashboard",
+    href: "/",
     icon: LayoutDashboard,
-    active: pathname === "/dashboard",
+    active: pathname === "/" || pathname === "/dashboard",
   };
 
   // Reports
@@ -143,12 +142,6 @@ export function Sidebar({
       href: "/settings",
       icon: Settings,
       active: pathname === "/settings" || pathname.startsWith("/settings"),
-    },
-    {
-      title: "← Marketing Site",
-      href: "/",
-      icon: ArrowLeft,
-      active: false,
     },
   ];
 
