@@ -247,7 +247,7 @@ export function BillingPlansTab({
             {/* Plan Title & Dynamic Price */}
             <div>
               <h2 className="text-xl sm:text-2xl font-bold text-slate-900 tracking-tight">
-                {activePlan.name}
+                {activePlan.name.includes("Plan") ? activePlan.name : `${activePlan.name} Plan`}
               </h2>
               <div className="flex items-baseline gap-2 mt-1">
                 <span className="text-2xl sm:text-3xl font-extrabold text-slate-900 font-mono">
@@ -578,7 +578,7 @@ export function BillingPlansTab({
                       <div>
                         <span className="text-2xl font-extrabold text-slate-900">Custom</span>
                         <p className="text-[11px] text-slate-500 mt-0.5 font-medium">
-                          Starting at ${isAnnual ? "1,200" : "1,500"} / mo
+                          Starting at $1,500 / mo
                         </p>
                       </div>
                     ) : (

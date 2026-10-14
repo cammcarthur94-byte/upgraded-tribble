@@ -142,28 +142,41 @@ export function TeamWorkspaceTab({
                     <div className="space-y-0.5">
                       <div className="flex items-center gap-1.5">
                         {isOwner ? (
-                          <span className="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold tracking-wide bg-purple-50 text-purple-700 border border-purple-200">
-                            OWNER
-                          </span>
+                          <div className="flex items-center gap-2">
+                            <span className="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold tracking-wide bg-purple-50 text-purple-700 border border-purple-200">
+                              OWNER
+                            </span>
+                            <span className="text-[11px] text-slate-500 font-medium">
+                              (Organization Founder)
+                            </span>
+                          </div>
                         ) : (
-                          <select
-                            value={member.role}
-                            onChange={(e) =>
-                              onUpdateRole(
-                                member.id,
-                                e.target.value as "Admin" | "Editor" | "Viewer"
-                              )
-                            }
-                            className="text-xs font-medium py-0.5 px-2 bg-slate-50 border border-slate-200 rounded-lg text-slate-800 focus:outline-indigo-500 cursor-pointer"
-                          >
-                            <option value="Admin">Admin</option>
-                            <option value="Editor">Editor</option>
-                            <option value="Viewer">Viewer</option>
-                          </select>
+                          <div className="flex items-center gap-2">
+                            {member.title && (
+                              <span className="text-xs font-semibold text-slate-900 tracking-tight">
+                                {member.title}
+                              </span>
+                            )}
+                            <div className="flex items-center gap-1">
+                              <span className="text-slate-400 text-xs">(</span>
+                              <select
+                                value={member.role}
+                                onChange={(e) =>
+                                  onUpdateRole(
+                                    member.id,
+                                    e.target.value as "Admin" | "Editor" | "Viewer"
+                                  )
+                                }
+                                className="text-xs font-semibold py-0.5 px-1.5 bg-slate-100 hover:bg-slate-200/80 border border-slate-200/90 rounded text-slate-700 focus:outline-indigo-500 cursor-pointer transition-colors"
+                              >
+                                <option value="Admin">Admin</option>
+                                <option value="Editor">Editor</option>
+                                <option value="Viewer">Viewer</option>
+                              </select>
+                              <span className="text-slate-400 text-xs">)</span>
+                            </div>
+                          </div>
                         )}
-                      </div>
-                      <div className="text-[10px] text-slate-400 font-medium">
-                        {member.title || (isOwner ? "Organization Founder" : "Team Member")}
                       </div>
                     </div>
                   </td>

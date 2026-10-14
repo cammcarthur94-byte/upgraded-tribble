@@ -159,7 +159,7 @@ function SettingsPageContent() {
       name: "Shopify Product Catalog & Orders",
       category: "ecommerce",
       status: "connected",
-      target: "gymshark-us.myshopify.com",
+      target: "Connected (gymshark-us.myshopify.com)",
       details: "Syncing 7,456 SKUs for AI Shopping Carousels",
       lastSynced: "12m ago",
       badgeText: "Synced 12m ago",
@@ -188,7 +188,7 @@ function SettingsPageContent() {
     },
     {
       id: "slack",
-      name: "Slack Alerts",
+      name: "Slack Alerts (#geo-visibility-alerts)",
       category: "alerts",
       status: "connected",
       target: "#geo-visibility-alerts",
@@ -408,8 +408,7 @@ function SettingsPageContent() {
             onClick={() => setIsStripeModalOpen(true)}
             className="h-9 px-3.5 text-xs bg-slate-900 hover:bg-slate-800 text-white font-medium shadow-xs gap-1.5"
           >
-            Manage in Stripe
-            <ExternalLink className="w-3 h-3 text-slate-300" />
+            Manage in Stripe ↗
           </Button>
         </div>
       </div>
