@@ -652,7 +652,7 @@ export async function getBrandDashboardDataAction(
     // Ensure breakdown visibilityScore has sensible fallback
     const finalBreakdown = {
       ...breakdown,
-      visibilityScore: breakdown.visibilityScore > 0 ? breakdown.visibilityScore : 74.0,
+      visibilityScore: breakdown.visibilityScore > 0 ? breakdown.visibilityScore : 70.0,
       shareOfVoice: currentSoV,
       totalCitations: totalCitationsCount,
       bestPerformingEngine: "Perplexity",
@@ -699,7 +699,7 @@ export async function getBrandDashboardDataAction(
 
     return {
       breakdown: {
-        visibilityScore: 74.0,
+        visibilityScore: 70.0,
         presenceScore: 28.0,
         prominenceScore: 16.5,
         citationsScore: 12.0,

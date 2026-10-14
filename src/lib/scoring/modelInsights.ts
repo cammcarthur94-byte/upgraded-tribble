@@ -421,7 +421,7 @@ function generateSeededEngineInsights(
       },
       citationsPerAnswer: 5.4,
       shareOfVoice: 62,
-      winRateVsCompetitors: 82,
+      winRateVsCompetitors: 78,
       topCitedDomains: [
         { domain: "reddit.com", count: 24 },
         { domain: "runnersworld.com", count: 18 },
@@ -476,8 +476,8 @@ function generateSeededEngineInsights(
       displayName: "OpenAI ChatGPT",
       status: "live",
       totalRuns: Math.round(50 * multiplier),
-      inclusionCount: Math.round(39 * multiplier),
-      brandInclusionRate: 78,
+      inclusionCount: Math.round(40 * multiplier),
+      brandInclusionRate: 80,
       competitorDominanceRate: 14,
       avgMentionPosition: 1.8,
       sentimentBreakdown: {
@@ -490,7 +490,7 @@ function generateSeededEngineInsights(
       },
       citationsPerAnswer: 3.2,
       shareOfVoice: 54,
-      winRateVsCompetitors: 74,
+      winRateVsCompetitors: 65,
       topCitedDomains: [
         { domain: "womenshealthmag.com", count: 16 },
         { domain: "menshealth.com", count: 12 },
@@ -628,7 +628,7 @@ function generateSeededEngineInsights(
       },
       citationsPerAnswer: 1.8,
       shareOfVoice: 46,
-      winRateVsCompetitors: 60,
+      winRateVsCompetitors: 48,
       topCitedDomains: [
         { domain: "theverge.com", count: 8 },
         { domain: "nytimes.com/wirecutter", count: 6 },

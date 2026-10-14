@@ -1068,7 +1068,7 @@ export async function getCitationsExplorerDataAction(
         competitorCitations: { Nike: 12, Lululemon: 8 },
         instances: [
           {
-            url: "https://youtube.com/watch?v=gymshark_try_on_haul_2025",
+            url: "https://youtube.com/watch?v=gymshark_try_on_haul_2026",
             promptQuery: "What are the best squat-proof seamless gym leggings with high compression?",
             promptId: "p-1",
             engineName: "gemini",
@@ -1097,7 +1097,7 @@ export async function getCitationsExplorerDataAction(
             promptId: "p-1",
             engineName: "perplexity",
             sentiment: "positive",
-            contextSnippet: `"...rated Gymshark #1 for weight room compression and non-slip high waistband in 2025 editorial testing..."`,
+            contextSnippet: `"...rated Gymshark #1 for weight room compression and non-slip high waistband in 2026 editorial testing..."`,
             timestamp: new Date(Date.now() - 1000 * 60 * 60 * 5).toISOString(),
           },
         ],

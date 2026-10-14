@@ -105,11 +105,11 @@ export function EngineBenchmarkCards({
   const getModelSubtitle = (engine: string) => {
     switch (engine.toLowerCase()) {
       case "perplexity":
-        return "Sonar Search • Live Web";
+        return "Sonar Pro • Live Web Search";
       case "chatgpt":
-        return "ChatGPT Search • Hybrid";
+        return "GPT-4o Search • Hybrid";
       case "gemini":
-        return "AI Overviews & Gemini";
+        return "Gemini 2.5 + AI Overviews";
       case "claude":
         return "Claude Sonnet • Web + Memory";
       default:

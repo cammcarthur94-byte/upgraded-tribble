@@ -8,7 +8,7 @@ import { AppShell } from "@/components/layout/app-shell";
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: "Recomnd - AI Visibility Tracking (GEO/AEO)",
+  title: "Recomnd v1.0 — Enterprise AI Visibility Tracking (GEO/AEO)",
   description: "Comprehensive competitive benchmarking and generative perception for brands across AI models.",
 };
 

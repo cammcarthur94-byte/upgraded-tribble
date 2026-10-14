@@ -54,7 +54,7 @@ Guidelines:
     const fallbackPrompts = [
       `What is the best ${category} specifically built for ${persona}?`,
       `Top rated ${category} alternatives for ${persona} with fast setup and proven results`,
-      `Compare the leading ${category} platforms for ${persona} in 2025`,
+      `Compare the leading ${category} platforms for ${persona} in 2026`,
       `Which ${category} do most experienced ${persona} recommend and why?`,
       `What are the most cost-effective ${category} solutions for ${persona} looking to scale?`,
     ];

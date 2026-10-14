@@ -440,7 +440,7 @@ export async function getProductVisibilityAnalyticsAction(
           },
           {
             promptId: "sp-3",
-            promptText: "Top buttery-soft yoga leggings for competitive athletics 2025",
+            promptText: "Top buttery-soft yoga leggings for competitive athletics 2026",
             engine: "chatgpt" as SupportedEngine,
             rankPosition: 2,
           },
@@ -463,7 +463,7 @@ export async function getProductVisibilityAnalyticsAction(
         prompts: [
           {
             promptId: "sp-3",
-            promptText: "Top buttery-soft yoga leggings for competitive athletics 2025",
+            promptText: "Top buttery-soft yoga leggings for competitive athletics 2026",
             engine: "chatgpt" as SupportedEngine,
             rankPosition: 1,
           },
@@ -772,7 +772,7 @@ export async function getProductVisibilityAnalyticsAction(
       },
       {
         id: "sp-3",
-        promptText: "Top buttery-soft yoga leggings for competitive athletics 2025",
+        promptText: "Top buttery-soft yoga leggings for competitive athletics 2026",
         engines: ["chatgpt", "gemini", "claude"] as SupportedEngine[],
         productCount: 5,
         topBrand: "Lululemon",
