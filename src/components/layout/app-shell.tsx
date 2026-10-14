@@ -53,13 +53,13 @@ export function AppShell({ children }: { children: ReactNode }) {
 
       {/* Main Content Area - Extends smoothly when sidebar is collapsed */}
       <main
-        className={`flex-1 transition-all duration-300 ease-in-out min-h-screen overflow-y-auto ${
+        className={`flex-1 transition-all duration-300 ease-in-out min-h-screen min-w-0 w-full overflow-y-auto overflow-x-hidden ${
           isCollapsed ? "ml-[72px]" : "ml-64"
         }`}
       >
         <div
-          className={`mx-auto px-6 pb-12 pt-4 sm:pt-5 lg:px-10 transition-all duration-300 ease-in-out ${
-            isCollapsed ? "max-w-[1680px] w-full" : "max-w-7xl"
+          className={`mx-auto px-4 sm:px-6 lg:px-10 pb-12 pt-4 sm:pt-5 w-full min-w-0 transition-all duration-300 ease-in-out ${
+            isCollapsed ? "max-w-[1680px]" : "max-w-7xl"
           }`}
         >
           {children}

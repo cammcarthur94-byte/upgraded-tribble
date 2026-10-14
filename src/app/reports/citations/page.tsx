@@ -12,6 +12,8 @@ import { getCitationsExplorerDataAction } from "@/app/actions/report-actions";
 import { EngineBadge } from "@/components/prompts/engine-badge";
 import { CitationDetailsSheet } from "@/components/reports/citation-details-sheet";
 import { MentionsTrendCard, CitationsTrendCard } from "@/components/citations/metric-trend-chart-card";
+import { TopKpiRow } from "@/components/dashboard/top-kpi-row";
+import { GLOBAL_METRICS_30D } from "@/data/mockDataStore";
 import { Favicon } from "@/components/ui/favicon";
 import {
   Globe,
@@ -201,99 +203,12 @@ export default function CitationsExplorerPage() {
         </div>
       </div>
 
-      {/* KPI Cards Row (4 Cards) */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        {/* Card 1: Total Sources Cited */}
-        <div className="bg-white rounded-2xl border border-slate-200/80 p-5 shadow-xs flex flex-col justify-between">
-          <div className="flex items-center justify-between">
-            <span className="text-xs font-medium text-slate-500">
-              Total Sources Cited
-            </span>
-            <Link2 className="w-4 h-4 text-slate-400" />
-          </div>
-          <div className="flex items-center justify-between mt-3">
-            <div className="text-3xl font-bold text-slate-900 tracking-tight">
-              {loading ? "..." : data?.totalSourcesCited ?? 0}
-            </div>
-            <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-medium bg-emerald-50 text-emerald-700 border border-emerald-200/80">
-              <TrendingUp className="w-3 h-3 text-emerald-600" />
-              +18% this wk
-            </span>
-          </div>
-        </div>
-
-        {/* Card 2: Unique Referring Domains */}
-        <div className="bg-white rounded-2xl border border-slate-200/80 p-5 shadow-xs flex flex-col justify-between">
-          <div className="flex items-center justify-between">
-            <span className="text-xs font-medium text-slate-500">
-              Referring Domains
-            </span>
-            <Globe className="w-4 h-4 text-slate-400" />
-          </div>
-          <div className="flex items-center justify-between mt-3">
-            <div className="text-3xl font-bold text-slate-900 tracking-tight">
-              {loading ? "..." : data?.uniqueReferringDomains ?? 0}
-            </div>
-            <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-purple-50 text-purple-700 border border-purple-200/80">
-              High Authority
-            </span>
-          </div>
-        </div>
-
-        {/* Card 3: Owned Source Ratio */}
-        <div className="bg-white rounded-2xl border border-slate-200/80 p-5 shadow-xs flex flex-col justify-between">
-          <div className="flex items-center justify-between">
-            <span className="text-xs font-medium text-slate-500">
-              Owned Source Ratio
-            </span>
-            <PieChart className="w-4 h-4 text-slate-400" />
-          </div>
-          <div className="mt-2 space-y-2">
-            <div className="flex items-baseline justify-between">
-              <span className="text-3xl font-bold text-slate-900 tracking-tight">
-                {loading ? "..." : `${data?.ownedSourceRatio ?? 0}%`}
-              </span>
-              <span className="text-xs font-medium text-slate-400">
-                {100 - (data?.ownedSourceRatio ?? 27)}% 3rd-party
-              </span>
-            </div>
-            <div className="w-full bg-slate-100 rounded-full h-1.5 overflow-hidden">
-              <div
-                className="bg-emerald-500 h-full rounded-full transition-all duration-500"
-                style={{ width: `${Math.min(100, data?.ownedSourceRatio ?? 0)}%` }}
-              />
-            </div>
-          </div>
-        </div>
-
-        {/* Card 4: Citation Share of Voice */}
-        <div className="bg-white rounded-2xl border border-slate-200/80 p-5 shadow-xs flex flex-col justify-between">
-          <div className="flex items-center justify-between">
-            <span className="text-xs font-medium text-slate-500">
-              Citation Share (SoV)
-            </span>
-            <BarChart3 className="w-4 h-4 text-emerald-600" />
-          </div>
-          <div className="mt-2 space-y-2">
-            <div className="flex items-baseline justify-between">
-              <span className="text-3xl font-bold text-slate-900 tracking-tight">
-                {currentBrandShare.percentage}%
-              </span>
-              <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-medium bg-emerald-50 text-emerald-700 border border-emerald-200/80">
-                <TrendingUp className="w-3 h-3 text-emerald-600" />
-                +8% this mo
-              </span>
-            </div>
-            {/* Single brand progress bar */}
-            <div className="w-full bg-slate-100 rounded-full h-1.5 overflow-hidden">
-              <div
-                className="bg-emerald-500 h-full rounded-full transition-all duration-500"
-                style={{ width: `${Math.min(100, currentBrandShare.percentage)}%` }}
-              />
-            </div>
-          </div>
-        </div>
-      </div>
+      {/* Synchronized 4 KPI Metric Cards */}
+      <TopKpiRow
+        citationsTitle="Referring Domains"
+        citationsCount={data?.uniqueReferringDomains || GLOBAL_METRICS_30D.referringDomains}
+        citationsTrend={GLOBAL_METRICS_30D.referringDomainsTrend}
+      />
 
       {/* Mentions & Citations Trajectory Charts (2-Card Grid) */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 items-stretch">

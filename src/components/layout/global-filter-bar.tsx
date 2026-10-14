@@ -25,10 +25,13 @@ export function GlobalFilterBar() {
     selectedEngines,
     toggleEngine,
     selectAllEngines,
+    searchIntent,
+    setSearchIntent,
     resetFilters,
   } = useGlobalFilters();
 
   const [isEngineDropdownOpen, setIsEngineDropdownOpen] = useState(false);
+  const [isIntentDropdownOpen, setIsIntentDropdownOpen] = useState(false);
 
   const engineMeta: Record<SupportedEngine, { label: string }> = {
     chatgpt: { label: "ChatGPT" },
@@ -37,11 +40,14 @@ export function GlobalFilterBar() {
     perplexity: { label: "Perplexity" },
   };
 
+  const intents = ["all", "Commercial", "Transactional", "Informational", "Navigational"] as const;
+
   const isAllEnginesSelected = selectedEngines.length === ALL_ENGINES.length;
-  const hasCustomFilters = dateRange !== "30d" || !isAllEnginesSelected;
+  const hasCustomFilters =
+    dateRange !== "30d" || !isAllEnginesSelected || searchIntent !== "all";
 
   return (
-    <div className="sticky top-0 z-20 bg-white/95 backdrop-blur-sm border-b border-slate-200/80 px-8 py-3 mb-6 transition-all shadow-2xs">
+    <div className="sticky top-0 z-20 bg-white/95 backdrop-blur-sm border-b border-slate-200/80 px-4 sm:px-6 lg:px-8 py-2.5 mb-6 transition-all shadow-2xs">
       <div className="max-w-7xl mx-auto flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
         {/* Left: Filter label & chips */}
         <div className="flex items-center gap-2.5 flex-wrap">
@@ -57,7 +63,10 @@ export function GlobalFilterBar() {
           <div className="relative">
             <button
               type="button"
-              onClick={() => setIsEngineDropdownOpen(!isEngineDropdownOpen)}
+              onClick={() => {
+                setIsEngineDropdownOpen(!isEngineDropdownOpen);
+                setIsIntentDropdownOpen(false);
+              }}
               className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-xl border text-xs font-medium transition-all ${
                 !isAllEnginesSelected
                   ? "bg-indigo-50/80 text-indigo-900 border-indigo-200"
@@ -130,6 +139,67 @@ export function GlobalFilterBar() {
                           ) : (
                             <span className="w-3.5 h-3.5" />
                           )}
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+              </>
+            )}
+          </div>
+
+          {/* Search Intent Filter Dropdown */}
+          <div className="relative">
+            <button
+              type="button"
+              onClick={() => {
+                setIsIntentDropdownOpen(!isIntentDropdownOpen);
+                setIsEngineDropdownOpen(false);
+              }}
+              className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border text-xs font-medium transition-all ${
+                searchIntent !== "all"
+                  ? "bg-indigo-50/80 text-indigo-900 border-indigo-200"
+                  : "bg-white text-slate-700 border-slate-200 hover:bg-slate-50"
+              }`}
+            >
+              <SlidersHorizontal className="w-3 h-3 text-slate-400" />
+              <span>{searchIntent === "all" ? "Intent: All" : `Intent: ${searchIntent}`}</span>
+              <ChevronDown
+                className={`w-3.5 h-3.5 text-slate-400 transition-transform ${
+                  isIntentDropdownOpen ? "rotate-180" : ""
+                }`}
+              />
+            </button>
+
+            {isIntentDropdownOpen && (
+              <>
+                <div
+                  className="fixed inset-0 z-40"
+                  onClick={() => setIsIntentDropdownOpen(false)}
+                />
+                <div className="absolute top-full left-0 mt-1.5 w-48 bg-white rounded-xl border border-slate-200 shadow-xl py-1.5 z-50 animate-in fade-in slide-in-from-top-1 text-xs">
+                  <div className="px-3 py-1 text-[11px] font-semibold uppercase tracking-wider text-slate-400 border-b border-slate-100">
+                    Search Intent
+                  </div>
+                  <div className="p-1 space-y-0.5">
+                    {intents.map((item) => {
+                      const isSelected = searchIntent === item;
+                      return (
+                        <button
+                          key={item}
+                          type="button"
+                          onClick={() => {
+                            setSearchIntent(item);
+                            setIsIntentDropdownOpen(false);
+                          }}
+                          className={`w-full flex items-center justify-between px-2.5 py-1.5 rounded-lg transition-colors text-left ${
+                            isSelected
+                              ? "bg-indigo-50 font-semibold text-indigo-900"
+                              : "text-slate-700 hover:bg-slate-50 font-medium"
+                          }`}
+                        >
+                          <span>{item === "all" ? "All Intents" : item}</span>
+                          {isSelected && <Check className="w-3.5 h-3.5 text-indigo-600" />}
                         </button>
                       );
                     })}

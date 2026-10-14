@@ -138,7 +138,7 @@ export function Sidebar({
       title: "Settings & Billing",
       href: "/settings",
       icon: Settings,
-      active: pathname === "/settings",
+      active: pathname === "/settings" || pathname.startsWith("/settings"),
     },
   ];
 
