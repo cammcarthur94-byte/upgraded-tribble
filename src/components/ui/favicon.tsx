@@ -193,16 +193,54 @@ function ClaudeLogo({ size, className }: { size: number; className?: string }) {
   );
 }
 
+export function getEngineDomain(engine: string): string {
+  const norm = (engine || "").toLowerCase().trim();
+  if (ENGINE_DOMAINS[norm]) return ENGINE_DOMAINS[norm];
+  if (norm.includes("perplexity")) return "perplexity.ai";
+  if (norm.includes("chatgpt") || norm.includes("openai")) return "chatgpt.com";
+  if (norm.includes("gemini") || norm.includes("google")) return "gemini.google.com";
+  if (norm.includes("claude") || norm.includes("anthropic")) return "claude.ai";
+  if (norm.includes("copilot") || norm.includes("microsoft")) return "copilot.microsoft.com";
+  if (norm.includes("deepseek")) return "deepseek.com";
+  if (norm.includes("meta") || norm.includes("llama")) return "meta.ai";
+  if (norm.includes("grok") || norm.includes("xai")) return "x.ai";
+  return "";
+}
+
+export function getEngineFaviconUrl(engine: string, size: number = 64): string {
+  const domain = getEngineDomain(engine);
+  return domain ? getFaviconUrl(domain, size) : "";
+}
+
 /**
- * Dedicated Favicon component for AI engines (ChatGPT, Claude, Gemini, Perplexity, Copilot)
- * Uses high-fidelity vector icons with official styling.
+ * Dedicated Favicon component for AI engines (ChatGPT, Claude, Gemini, Perplexity, Copilot, etc.)
+ * Uses authentic model favicons from Google's Favicon service with resilient vector SVG fallbacks.
  */
 export function EngineFavicon({
   engine,
   size = 18,
   className,
 }: EngineFaviconProps) {
-  const norm = engine.toLowerCase().trim();
+  const [hasError, setHasError] = useState(false);
+  const norm = (engine || "").toLowerCase().trim();
+  const domain = getEngineDomain(norm);
+
+  if (domain && !hasError) {
+    const faviconUrl = getFaviconUrl(domain, size > 32 ? 128 : 64);
+    return (
+      // eslint-disable-next-line @next/next/no-img-element
+      <img
+        src={faviconUrl}
+        alt={`${engine} favicon`}
+        width={size}
+        height={size}
+        loading="lazy"
+        onError={() => setHasError(true)}
+        className={cn("object-contain shrink-0 rounded-xs select-none", className)}
+        style={{ width: size, height: size }}
+      />
+    );
+  }
 
   if (norm.includes("perplexity")) {
     return <PerplexityLogo size={size} className={className} />;

@@ -14,7 +14,9 @@ import {
   Smile,
   Meh,
   Frown,
+  ShoppingBag,
 } from "lucide-react";
+import { findProductsInText } from "@/services/productImageResolver";
 
 interface EngineResponseCardProps {
   result: EngineRunResult;
@@ -80,6 +82,51 @@ export function EngineResponseCard({
           brandName={brandName}
         />
       </div>
+
+      {/* Featured Products in this AI Response */}
+      {(() => {
+        const detectedProducts = findProductsInText(result.rawResponseText);
+        if (detectedProducts.length === 0) return null;
+
+        return (
+          <div className="px-5 pb-4 pt-0">
+            <div className="p-3.5 rounded-xl bg-slate-50 border border-slate-200/80 space-y-2">
+              <div className="flex items-center gap-1.5 text-xs font-bold text-slate-800">
+                <ShoppingBag className="w-3.5 h-3.5 text-indigo-600" />
+                <span>Featured Products ({detectedProducts.length})</span>
+              </div>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                {detectedProducts.map((p) => (
+                  <div
+                    key={p.id}
+                    className="flex items-center gap-2.5 p-2 rounded-lg bg-white border border-slate-200/70 shadow-2xs"
+                  >
+                    <img
+                      src={p.imageUrl}
+                      alt={p.name}
+                      className="w-9 h-9 rounded-md object-cover border border-slate-100 shrink-0 bg-slate-50"
+                      loading="lazy"
+                    />
+                    <div className="min-w-0 flex-1">
+                      <span className="font-semibold text-slate-900 text-xs block truncate" title={p.name}>
+                        {p.name}
+                      </span>
+                      <div className="flex items-center justify-between text-[10px] text-slate-500 mt-0.5">
+                        <span>{p.brand}</span>
+                        {p.price && (
+                          <span className="font-mono font-bold text-emerald-700 bg-emerald-50 px-1 rounded">
+                            {p.price}
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        );
+      })()}
 
       {/* Footnote / Sources Collapsible Drawer */}
       <div className="border-t border-slate-100 bg-slate-50/40">

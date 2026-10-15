@@ -17,7 +17,9 @@ import {
   Layers,
   ArrowUpRight,
   ChevronRight,
+  ShoppingBag,
 } from "lucide-react";
+import { findProductsInText } from "@/services/productImageResolver";
 
 interface EngineResponseData {
   engineName: string;
@@ -450,6 +452,60 @@ Premium micro-performance fabric with high sheen, best utilized for hot yoga and
             <div className="py-1">
               {renderHighlightedContent(displayText)}
             </div>
+
+            {/* Products Recommended in this AI Response */}
+            {(() => {
+              const productsInResult = findProductsInText(displayText);
+              if (productsInResult.length === 0) return null;
+
+              return (
+                <div className="pt-3.5 pb-1 border-t border-slate-100 space-y-2.5">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-1.5">
+                      <ShoppingBag className="w-3.5 h-3.5 text-indigo-600" />
+                      <span className="text-[11px] font-bold uppercase tracking-wider text-slate-800">
+                        Products Featured in this AI Answer ({productsInResult.length})
+                      </span>
+                    </div>
+                    <span className="text-[10px] text-slate-400 font-medium">
+                      Matched from product catalog
+                    </span>
+                  </div>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-2.5">
+                    {productsInResult.map((p) => (
+                      <div
+                        key={p.id}
+                        className="flex items-center gap-2.5 p-2 rounded-lg bg-slate-50 border border-slate-200/80 shadow-2xs group hover:bg-slate-100/70 transition-colors"
+                      >
+                        <img
+                          src={p.imageUrl}
+                          alt={p.name}
+                          className="w-10 h-10 rounded-md object-cover border border-slate-200/80 shrink-0 bg-white"
+                          loading="lazy"
+                        />
+                        <div className="min-w-0 flex-1">
+                          <span
+                            className="font-bold text-slate-900 text-xs block truncate leading-tight group-hover:text-indigo-600 transition-colors"
+                            title={p.name}
+                          >
+                            {p.name}
+                          </span>
+                          <div className="flex items-center justify-between text-[11px] text-slate-500 mt-0.5">
+                            <span className="font-medium text-slate-600 truncate">{p.brand}</span>
+                            {p.price && (
+                              <span className="font-mono font-bold text-emerald-700 bg-emerald-50 px-1 rounded text-[10px] shrink-0">
+                                {p.price}
+                              </span>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              );
+            })()}
 
             {/* Footnote Citations Tray */}
             {activeData.citations && activeData.citations.length > 0 && (

@@ -253,6 +253,7 @@ export async function getProductVisibilityAnalyticsAction(
         sentiment,
         rawContexts: item.rawContexts,
         prompts: promptRefs,
+        imageUrl: getProductThumbnail(item.productName),
       };
     }
   );

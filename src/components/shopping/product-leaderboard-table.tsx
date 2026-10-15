@@ -3,13 +3,15 @@
 import React, { useState, useMemo } from "react";
 import { ProductShelfItem, SupportedEngine } from "@/lib/types";
 import { EngineBadge } from "@/components/prompts/engine-badge";
-import { Favicon } from "@/components/ui/favicon";
+import { Favicon, EngineFavicon } from "@/components/ui/favicon";
+import { getProductThumbnail } from "@/services/productImageResolver";
 import {
   Search,
   Filter,
   ChevronDown,
   ChevronUp,
   Tag,
+  Package,
   MessageSquare,
   Sparkles,
   ExternalLink,
@@ -160,7 +162,7 @@ export function ProductLeaderboardTable({
             </button>
           </div>
 
-          {/* Engine Filter */}
+            {/* Engine Filter */}
           <div className="relative">
             <select
               value={selectedEngine}
@@ -173,7 +175,13 @@ export function ProductLeaderboardTable({
               <option value="gemini">Gemini</option>
               <option value="claude">Claude</option>
             </select>
-            <Filter className="w-3 h-3 text-slate-400 absolute left-2.5 top-2.5 pointer-events-none" />
+            {selectedEngine !== "all" ? (
+              <div className="absolute left-2.5 top-2.5 pointer-events-none flex items-center justify-center">
+                <EngineFavicon engine={selectedEngine} size={13} />
+              </div>
+            ) : (
+              <Filter className="w-3 h-3 text-slate-400 absolute left-2.5 top-2.5 pointer-events-none" />
+            )}
             <ChevronDown className="w-3 h-3 text-slate-400 absolute right-2 top-2.5 pointer-events-none" />
           </div>
         </div>
@@ -193,7 +201,7 @@ export function ProductLeaderboardTable({
                   <ArrowUpDown className="w-3 h-3 text-slate-400" />
                 </div>
               </th>
-              <th className="py-3.5 px-4 text-center border-r border-slate-200/80">Product Name & SKU</th>
+              <th className="py-3.5 px-4 text-left border-r border-slate-200/80">Product Name & SKU</th>
               <th className="py-3.5 px-3 text-center border-r border-slate-200/80">Brand</th>
               <th className="py-3.5 px-3 text-center border-r border-slate-200/80">AI Engine Presence</th>
               <th
@@ -272,18 +280,37 @@ export function ProductLeaderboardTable({
                       </td>
 
                       {/* Product Name & SKU */}
-                      <td className="py-3.5 px-4 text-center border-r border-b border-slate-200/80 max-w-xs">
-                        <div className="flex flex-col items-center justify-center text-center">
-                          <div className="font-bold text-slate-900 truncate max-w-full">
-                            {product.productName}
-                          </div>
-                          {product.skuOrIdentifier && (
-                            <div className="flex items-center justify-center gap-1.5 mt-0.5 text-[11px] text-slate-400 font-mono">
-                              <Tag className="w-3 h-3 text-slate-400" />
-                              <span>{product.skuOrIdentifier}</span>
+                      <td className="py-3.5 px-4 text-left border-r border-b border-slate-200/80 max-w-sm">
+                        {(() => {
+                          const imgUrl = product.imageUrl || getProductThumbnail(product.productName);
+                          return (
+                            <div className="flex items-center gap-3">
+                              {imgUrl ? (
+                                <img
+                                  src={imgUrl}
+                                  alt={product.productName}
+                                  className="w-10 h-10 rounded-lg object-cover border border-slate-200 shrink-0 bg-slate-50 shadow-2xs"
+                                  loading="lazy"
+                                />
+                              ) : (
+                                <div className="w-10 h-10 rounded-lg bg-slate-100 border border-slate-200 flex items-center justify-center shrink-0 text-slate-400">
+                                  <Package className="w-5 h-5 stroke-1" />
+                                </div>
+                              )}
+                              <div className="min-w-0 flex-1">
+                                <div className="font-bold text-slate-900 truncate" title={product.productName}>
+                                  {product.productName}
+                                </div>
+                                {product.skuOrIdentifier && (
+                                  <div className="flex items-center gap-1.5 mt-0.5 text-[11px] text-slate-400 font-mono">
+                                    <Tag className="w-3 h-3 text-slate-400 shrink-0" />
+                                    <span className="truncate">{product.skuOrIdentifier}</span>
+                                  </div>
+                                )}
+                              </div>
                             </div>
-                          )}
-                        </div>
+                          );
+                        })()}
                       </td>
 
                       {/* Brand Pill */}
@@ -408,16 +435,35 @@ export function ProductLeaderboardTable({
                       <tr className="bg-slate-50/90 border-b border-slate-200/80">
                         <td colSpan={9} className="p-4 lg:p-5">
                           <div className="space-y-3">
-                            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
-                              <div className="flex items-center gap-2">
-                                <Sparkles className="w-3.5 h-3.5 text-indigo-600" />
-                                <span className="text-xs font-bold text-slate-900">
-                                  Verbatim AI Grounding Quotes & Prompts for "{product.productName}"
-                                </span>
+                            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-slate-200/60">
+                              <div className="flex items-center gap-3">
+                                {(() => {
+                                  const expImg = product.imageUrl || getProductThumbnail(product.productName);
+                                  return expImg ? (
+                                    <img
+                                      src={expImg}
+                                      alt={product.productName}
+                                      className="w-11 h-11 rounded-lg object-cover border border-slate-200 bg-white shadow-2xs shrink-0"
+                                      loading="lazy"
+                                    />
+                                  ) : (
+                                    <div className="w-11 h-11 rounded-lg bg-white border border-slate-200 flex items-center justify-center shrink-0 text-slate-400 shadow-2xs">
+                                      <Package className="w-5 h-5 stroke-1" />
+                                    </div>
+                                  );
+                                })()}
+                                <div>
+                                  <div className="flex items-center gap-2">
+                                    <Sparkles className="w-3.5 h-3.5 text-indigo-600" />
+                                    <span className="text-xs font-bold text-slate-900">
+                                      Verbatim AI Grounding Quotes & Prompts for "{product.productName}"
+                                    </span>
+                                  </div>
+                                  <span className="text-[11px] text-slate-500 font-medium">
+                                    {product.brandName} · {product.rawContexts.length} model citation{product.rawContexts.length !== 1 ? "s" : ""} recorded
+                                  </span>
+                                </div>
                               </div>
-                              <span className="text-[11px] text-slate-400">
-                                {product.rawContexts.length} model citations recorded
-                              </span>
                             </div>
 
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-3">

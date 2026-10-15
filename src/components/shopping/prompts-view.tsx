@@ -3,7 +3,8 @@
 import React, { useState, useMemo } from "react";
 import { ShoppingPromptRow, SupportedEngine } from "@/lib/types";
 import { EngineBadge } from "@/components/prompts/engine-badge";
-import { Favicon } from "@/components/ui/favicon";
+import { Favicon, EngineFavicon } from "@/components/ui/favicon";
+import { getProductThumbnail } from "@/services/productImageResolver";
 import {
   MessageSquare,
   Package,
@@ -301,13 +302,14 @@ export function PromptsView({
                                           e.stopPropagation();
                                           setEngineFilter(eng);
                                         }}
-                                        className={`px-2.5 py-1 rounded-lg font-medium capitalize transition-all ${
+                                        className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg font-medium capitalize transition-all ${
                                           engineFilter === eng
                                             ? "bg-indigo-600 text-white font-semibold shadow-2xs"
                                             : "text-slate-600 hover:text-slate-900"
                                         }`}
                                       >
-                                        {eng}
+                                        <EngineFavicon engine={eng} size={12} />
+                                        <span>{eng}</span>
                                       </button>
                                     ))}
                                   </div>
@@ -406,11 +408,11 @@ export function PromptsView({
 
                                           {/* Product Info with Optional Image */}
                                           <div className="flex items-start gap-3 my-2.5">
-                                            {prod.imageUrl ? (
+                                            {(prod.imageUrl || getProductThumbnail(prod.productName)) ? (
                                               <img
-                                                src={prod.imageUrl}
+                                                src={prod.imageUrl || getProductThumbnail(prod.productName)}
                                                 alt={prod.productName}
-                                                className="w-12 h-12 rounded-lg object-cover border border-slate-200 shrink-0 bg-slate-100"
+                                                className="w-12 h-12 rounded-lg object-cover border border-slate-200 shrink-0 bg-slate-100 shadow-2xs"
                                                 loading="lazy"
                                               />
                                             ) : (

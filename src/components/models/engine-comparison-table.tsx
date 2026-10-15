@@ -21,6 +21,7 @@ import {
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { useInspector } from "@/context/inspector-context";
+import { findProductsInText } from "@/services/productImageResolver";
 
 interface EngineComparisonTableProps {
   engines: EngineInsightItem[];
@@ -218,6 +219,27 @@ export function EngineComparisonTable({
                                     <p className="text-[11px] text-slate-600 leading-relaxed italic">
                                       {fav.snippet}
                                     </p>
+                                    {(() => {
+                                      const prods = findProductsInText(fav.snippet);
+                                      if (prods.length === 0) return null;
+                                      return (
+                                        <div className="flex flex-wrap items-center gap-1.5 mt-2">
+                                          {prods.map((p) => (
+                                            <span
+                                              key={p.id}
+                                              className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md bg-white border border-slate-200 text-[10px] font-medium text-slate-800 shadow-2xs"
+                                            >
+                                              <img
+                                                src={p.imageUrl}
+                                                alt={p.name}
+                                                className="w-4 h-4 rounded-xs object-cover border border-slate-200 shrink-0"
+                                              />
+                                              <span>{p.name}</span>
+                                            </span>
+                                          ))}
+                                        </div>
+                                      );
+                                    })()}
                                     <div className="flex items-center justify-between gap-1.5 text-[10px] text-slate-400 mt-2 pt-1.5 border-t border-slate-100">
                                       <div className="flex items-center gap-1.5">
                                         <Clock className="w-3 h-3 text-slate-400" />

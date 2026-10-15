@@ -266,17 +266,12 @@ export default function PromptManagementPage() {
     const isBranded = status === "Branded";
     return (
       <span
-        className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-[11px] font-semibold border whitespace-nowrap ${
+        className={`inline-flex items-center px-2 py-0.5 rounded-md text-[11px] font-medium border whitespace-nowrap select-none ${
           isBranded
-            ? "bg-purple-50 text-purple-700 border-purple-200"
-            : "bg-slate-100 text-slate-600 border-slate-200"
+            ? "bg-purple-50/80 text-purple-700 border-purple-200/70"
+            : "bg-slate-50 text-slate-500 border-slate-200/70"
         }`}
       >
-        <span
-          className={`w-1.5 h-1.5 rounded-full mr-1.5 shrink-0 ${
-            isBranded ? "bg-purple-500" : "bg-slate-400"
-          }`}
-        />
         {isBranded ? "Branded" : "Unbranded"}
       </span>
     );
@@ -285,24 +280,17 @@ export default function PromptManagementPage() {
   const renderSearchIntentBadge = (intent?: SearchIntent) => {
     const val = intent || "Commercial";
     const styles: Record<SearchIntent, string> = {
-      Commercial: "bg-emerald-50 text-emerald-700 border-emerald-200",
-      Transactional: "bg-amber-50 text-amber-700 border-amber-200",
-      Informational: "bg-sky-50 text-sky-700 border-sky-200",
-      Navigational: "bg-indigo-50 text-indigo-700 border-indigo-200",
-    };
-    const dotColors: Record<SearchIntent, string> = {
-      Commercial: "bg-emerald-500",
-      Transactional: "bg-amber-500",
-      Informational: "bg-sky-500",
-      Navigational: "bg-indigo-500",
+      Commercial: "bg-emerald-50/80 text-emerald-700 border-emerald-200/70",
+      Transactional: "bg-amber-50/80 text-amber-800 border-amber-200/70",
+      Informational: "bg-sky-50/80 text-sky-700 border-sky-200/70",
+      Navigational: "bg-indigo-50/80 text-indigo-700 border-indigo-200/70",
     };
     return (
       <span
-        className={`inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-medium border whitespace-nowrap ${
+        className={`inline-flex items-center px-2 py-0.5 rounded-md text-[11px] font-medium border whitespace-nowrap select-none ${
           styles[val] || styles.Commercial
         }`}
       >
-        <span className={`w-1.5 h-1.5 rounded-full shrink-0 ${dotColors[val] || "bg-emerald-500"}`} />
         <span>{val}</span>
       </span>
     );
@@ -311,26 +299,18 @@ export default function PromptManagementPage() {
   const renderCategoryBadge = (cat?: PromptCategory) => {
     const val = cat || "Top of Funnel Discovery";
     const styles: Record<PromptCategory, string> = {
-      "Product Comparison": "bg-blue-50 text-blue-700 border-blue-200",
-      "Top of Funnel Discovery": "bg-violet-50 text-violet-700 border-violet-200",
-      "Buying Guide": "bg-teal-50 text-teal-700 border-teal-200",
-      "Feature Reviews": "bg-orange-50 text-orange-800 border-orange-200",
-      "Competitor Alternatives": "bg-rose-50 text-rose-700 border-rose-200",
-    };
-    const dotColors: Record<PromptCategory, string> = {
-      "Product Comparison": "bg-blue-500",
-      "Top of Funnel Discovery": "bg-violet-500",
-      "Buying Guide": "bg-teal-500",
-      "Feature Reviews": "bg-orange-500",
-      "Competitor Alternatives": "bg-rose-500",
+      "Product Comparison": "bg-blue-50/80 text-blue-700 border-blue-200/70",
+      "Top of Funnel Discovery": "bg-violet-50/80 text-violet-700 border-violet-200/70",
+      "Buying Guide": "bg-teal-50/80 text-teal-700 border-teal-200/70",
+      "Feature Reviews": "bg-orange-50/80 text-orange-800 border-orange-200/70",
+      "Competitor Alternatives": "bg-rose-50/80 text-rose-700 border-rose-200/70",
     };
     return (
       <span
-        className={`inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-medium border whitespace-nowrap ${
+        className={`inline-flex items-center px-2 py-0.5 rounded-md text-[11px] font-medium border whitespace-nowrap select-none ${
           styles[val] || styles["Top of Funnel Discovery"]
         }`}
       >
-        <span className={`w-1.5 h-1.5 rounded-full shrink-0 ${dotColors[val] || "bg-violet-500"}`} />
         <span>{val}</span>
       </span>
     );
@@ -639,110 +619,91 @@ export default function PromptManagementPage() {
         /* Data Table & Filtering Controls */
         <div className="space-y-4">
           {/* Filtering & Search Toolbar */}
-          <div className="bg-white rounded-xl border border-slate-200/60 p-4 shadow-2xs space-y-3">
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-3">
+          <div className="bg-white rounded-xl border border-slate-200/80 p-2.5 shadow-2xs flex flex-wrap items-center justify-between gap-2.5">
+            <div className="flex flex-wrap items-center gap-2 flex-1 min-w-[280px]">
               {/* Quick Search */}
-              <div className="relative flex-1 min-w-[240px]">
-                <Search className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
+              <div className="relative min-w-[200px] max-w-xs flex-1">
+                <Search className="w-3.5 h-3.5 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
                 <input
                   type="text"
-                  placeholder="Search prompts by query..."
+                  placeholder="Filter prompts..."
                   value={searchFilter}
                   onChange={(e) => setSearchFilter(e.target.value)}
-                  className="w-full text-xs pl-10 pr-8 py-2 rounded-xl border border-slate-200 bg-slate-50/50 hover:bg-white focus:bg-white focus:outline-hidden focus:ring-2 focus:ring-slate-900/10 focus:border-slate-800 transition-all placeholder:text-slate-400"
+                  className="w-full text-xs pl-8 pr-7 py-1.5 rounded-lg border border-slate-200 bg-slate-50/60 hover:bg-white focus:bg-white focus:outline-hidden focus:ring-2 focus:ring-slate-900/10 focus:border-slate-400 transition-all placeholder:text-slate-400"
                 />
                 {searchFilter && (
                   <button
                     onClick={() => setSearchFilter("")}
-                    className="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 p-0.5 rounded-md"
-                  >
-                    <X className="w-3.5 h-3.5" />
-                  </button>
-                )}
-              </div>
-
-              {/* Status / Count */}
-              <div className="flex items-center gap-2 text-xs text-slate-500 shrink-0">
-                <span>
-                  Showing <strong className="text-slate-900">{filteredPrompts.length}</strong> of{" "}
-                  <strong>{prompts.length}</strong> prompts
-                </span>
-                {hasActiveFilters && (
-                  <button
-                    onClick={resetFilters}
-                    className="inline-flex items-center gap-1 text-xs font-semibold text-indigo-600 hover:text-indigo-800 hover:underline ml-1"
+                    className="absolute right-2 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 p-0.5 rounded-md"
                   >
                     <X className="w-3 h-3" />
-                    <span>Reset filters</span>
                   </button>
                 )}
               </div>
+
+              {/* Inline Filter: Brand Status */}
+              <select
+                value={brandFilter}
+                onChange={(e) => setBrandFilter(e.target.value)}
+                className="text-xs py-1.5 px-2.5 rounded-lg border border-slate-200 bg-white hover:bg-slate-50/80 text-slate-600 font-medium cursor-pointer focus:outline-hidden focus:ring-2 focus:ring-slate-900/10 transition-colors"
+              >
+                <option value="all">Brand: All</option>
+                <option value="Branded">Brand: Branded</option>
+                <option value="Unbranded">Brand: Unbranded</option>
+              </select>
+
+              {/* Inline Filter: Search Intent */}
+              <select
+                value={intentFilter}
+                onChange={(e) => setIntentFilter(e.target.value)}
+                className="text-xs py-1.5 px-2.5 rounded-lg border border-slate-200 bg-white hover:bg-slate-50/80 text-slate-600 font-medium cursor-pointer focus:outline-hidden focus:ring-2 focus:ring-slate-900/10 transition-colors"
+              >
+                <option value="all">Intent: All</option>
+                <option value="Commercial">Intent: Commercial</option>
+                <option value="Transactional">Intent: Transactional</option>
+                <option value="Informational">Intent: Informational</option>
+                <option value="Navigational">Intent: Navigational</option>
+              </select>
+
+              {/* Inline Filter: Prompt Category */}
+              <select
+                value={categoryFilter}
+                onChange={(e) => setCategoryFilter(e.target.value)}
+                className="text-xs py-1.5 px-2.5 rounded-lg border border-slate-200 bg-white hover:bg-slate-50/80 text-slate-600 font-medium cursor-pointer focus:outline-hidden focus:ring-2 focus:ring-slate-900/10 transition-colors"
+              >
+                <option value="all">Category: All</option>
+                <option value="Product Comparison">Product Comparison</option>
+                <option value="Top of Funnel Discovery">Top of Funnel Discovery</option>
+                <option value="Buying Guide">Buying Guide</option>
+                <option value="Feature Reviews">Feature Reviews</option>
+                <option value="Competitor Alternatives">Competitor Alternatives</option>
+              </select>
+
+              {hasActiveFilters && (
+                <button
+                  onClick={resetFilters}
+                  className="inline-flex items-center gap-1 text-xs font-medium text-slate-500 hover:text-slate-800 px-2 py-1 rounded-md hover:bg-slate-100 transition-colors"
+                >
+                  <X className="w-3 h-3" />
+                  <span>Reset</span>
+                </button>
+              )}
             </div>
 
-            {/* Filter Dropdowns Grid */}
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5 pt-1 border-t border-slate-100">
-              {/* Filter: Brand Status */}
-              <div>
-                <label className="block text-[10px] font-semibold uppercase tracking-wider text-slate-400 mb-1">
-                  Branded / Unbranded
-                </label>
-                <select
-                  value={brandFilter}
-                  onChange={(e) => setBrandFilter(e.target.value)}
-                  className="w-full text-xs py-1.5 px-2.5 rounded-lg border border-slate-200 bg-white text-slate-700 focus:outline-hidden focus:ring-1 focus:ring-slate-900"
-                >
-                  <option value="all">All Brand Status</option>
-                  <option value="Branded">Branded</option>
-                  <option value="Unbranded">Unbranded</option>
-                </select>
-              </div>
-
-              {/* Filter: Search Intent */}
-              <div>
-                <label className="block text-[10px] font-semibold uppercase tracking-wider text-slate-400 mb-1">
-                  Search Intent
-                </label>
-                <select
-                  value={intentFilter}
-                  onChange={(e) => setIntentFilter(e.target.value)}
-                  className="w-full text-xs py-1.5 px-2.5 rounded-lg border border-slate-200 bg-white text-slate-700 focus:outline-hidden focus:ring-1 focus:ring-slate-900"
-                >
-                  <option value="all">All Intents</option>
-                  <option value="Commercial">Commercial</option>
-                  <option value="Transactional">Transactional</option>
-                  <option value="Informational">Informational</option>
-                  <option value="Navigational">Navigational</option>
-                </select>
-              </div>
-
-              {/* Filter: Prompt Category */}
-              <div>
-                <label className="block text-[10px] font-semibold uppercase tracking-wider text-slate-400 mb-1">
-                  Prompt Category
-                </label>
-                <select
-                  value={categoryFilter}
-                  onChange={(e) => setCategoryFilter(e.target.value)}
-                  className="w-full text-xs py-1.5 px-2.5 rounded-lg border border-slate-200 bg-white text-slate-700 focus:outline-hidden focus:ring-1 focus:ring-slate-900"
-                >
-                  <option value="all">All Categories</option>
-                  <option value="Product Comparison">Product Comparison</option>
-                  <option value="Top of Funnel Discovery">Top of Funnel Discovery</option>
-                  <option value="Buying Guide">Buying Guide</option>
-                  <option value="Feature Reviews">Feature Reviews</option>
-                  <option value="Competitor Alternatives">Competitor Alternatives</option>
-                </select>
-              </div>
+            {/* Prompt Count */}
+            <div className="text-xs text-slate-500 shrink-0">
+              Showing <span className="font-semibold text-slate-900">{filteredPrompts.length}</span> of{" "}
+              <span className="font-semibold text-slate-900">{prompts.length}</span>
             </div>
           </div>
 
           {/* Data Table */}
-          <div className="bg-white rounded-xl border border-slate-200/60 shadow-2xs overflow-hidden">
+          <div className="bg-white rounded-xl border border-slate-200/70 shadow-2xs overflow-hidden">
             <div className="overflow-x-auto">
-              <table className="w-full text-center border-collapse">
+              <table className="w-full border-collapse">
                 <thead>
-                  <tr className="border-b border-slate-200 bg-slate-50/80 text-[11px] font-semibold uppercase tracking-wider text-slate-500 select-none">
-                    <th className="py-4 px-3 text-center border-r border-slate-200/80 w-10">
+                  <tr className="border-b border-slate-200/80 bg-slate-50/70 text-[11px] font-semibold text-slate-500 select-none">
+                    <th className="py-3 px-3 text-center w-10">
                       <input
                         type="checkbox"
                         checked={
@@ -754,21 +715,21 @@ export default function PromptManagementPage() {
                         title="Select all prompts"
                       />
                     </th>
-                    <th className="py-4 px-4 text-center border-r border-slate-200/80 min-w-[280px]">Prompt Query</th>
-                    <th className="py-4 px-3 text-center border-r border-slate-200/80 whitespace-nowrap">Category</th>
-                    <th className="py-4 px-3 text-center border-r border-slate-200/80 whitespace-nowrap">Brand Status</th>
-                    <th className="py-4 px-3 text-center border-r border-slate-200/80 whitespace-nowrap">Search Intent</th>
-                    <th className="py-4 px-3 text-center border-r border-slate-200/80 whitespace-nowrap">Engines</th>
-                    <th className="py-4 px-3 text-center border-r border-slate-200/80 whitespace-nowrap">Frequency</th>
-                    <th className="py-4 px-3 text-center border-r border-slate-200/80 whitespace-nowrap">Performance</th>
-                    <th className="py-4 px-3 text-center border-r border-slate-200/80 whitespace-nowrap">Last Executed</th>
-                    <th className="py-4 px-4 text-center whitespace-nowrap">Actions</th>
+                    <th className="py-3 px-4 text-left min-w-[280px]">Prompt Query</th>
+                    <th className="py-3 px-3 text-left whitespace-nowrap">Category</th>
+                    <th className="py-3 px-3 text-left whitespace-nowrap">Brand Status</th>
+                    <th className="py-3 px-3 text-left whitespace-nowrap">Intent</th>
+                    <th className="py-3 px-3 text-center whitespace-nowrap">Engines</th>
+                    <th className="py-3 px-3 text-left whitespace-nowrap">Frequency</th>
+                    <th className="py-3 px-3 text-left whitespace-nowrap">Performance</th>
+                    <th className="py-3 px-3 text-left whitespace-nowrap">Last Executed</th>
+                    <th className="py-3 px-4 text-right whitespace-nowrap">Actions</th>
                   </tr>
                 </thead>
                 <tbody className="text-xs">
                   {filteredPrompts.length === 0 ? (
                     <tr>
-                      <td colSpan={10} className="py-12 px-4 text-center text-slate-500 border-b border-slate-200/80">
+                      <td colSpan={10} className="py-12 px-4 text-center text-slate-500 border-b border-slate-100">
                         <div className="max-w-xs mx-auto space-y-2">
                           <p className="font-semibold text-slate-800 text-sm">
                             No prompts match the selected filters
@@ -800,12 +761,12 @@ export default function PromptManagementPage() {
                       return (
                         <tr
                           key={prompt.id}
-                          className={`hover:bg-slate-50/70 transition-colors group ${
-                            selectedPromptIds.includes(prompt.id) ? "bg-slate-50/60" : ""
+                          className={`hover:bg-slate-50/60 transition-colors group ${
+                            selectedPromptIds.includes(prompt.id) ? "bg-slate-50/70" : ""
                           }`}
                         >
                           {/* Selection Checkbox */}
-                          <td className="py-4 px-3 text-center border-r border-b border-slate-200/80">
+                          <td className="py-3 px-3 text-center border-b border-slate-100">
                             <input
                               type="checkbox"
                               checked={selectedPromptIds.includes(prompt.id)}
@@ -815,12 +776,12 @@ export default function PromptManagementPage() {
                           </td>
 
                           {/* Column 1: Prompt Query & Geo/Market Pill */}
-                          <td className="py-4 px-4 text-left border-r border-b border-slate-200/80 min-w-[280px]">
-                            <div className="flex flex-col gap-1.5">
-                              <div className="flex items-start gap-2.5">
+                          <td className="py-3 px-4 text-left border-b border-slate-100 min-w-[280px]">
+                            <div className="flex flex-col gap-1">
+                              <div className="flex items-start gap-2">
                                 {/* Warning / Error Indicator with Tooltip */}
                                 {hasError && (
-                                  <div className="relative shrink-0">
+                                  <div className="relative shrink-0 mt-0.5">
                                     <button
                                       type="button"
                                       onMouseEnter={() => setActiveTooltipPromptId(prompt.id)}
@@ -828,7 +789,7 @@ export default function PromptManagementPage() {
                                       onClick={() =>
                                         setActiveTooltipPromptId(isTooltipOpen ? null : prompt.id)
                                       }
-                                      className={`p-1 rounded-md transition-colors cursor-pointer ${
+                                      className={`p-0.5 rounded transition-colors cursor-pointer ${
                                         prompt.latestStatus === "failed"
                                           ? "bg-rose-50 text-rose-600 hover:bg-rose-100"
                                           : "bg-amber-50 text-amber-600 hover:bg-amber-100"
@@ -881,7 +842,7 @@ export default function PromptManagementPage() {
 
                                 <Link
                                   href={`/reports/prompts?promptId=${prompt.id}`}
-                                  className="font-semibold text-slate-900 text-xs leading-snug hover:text-indigo-600 transition-colors inline-block text-left"
+                                  className="font-medium text-slate-900 text-xs leading-snug hover:text-indigo-600 transition-colors inline-block text-left"
                                 >
                                   {prompt.queryText}
                                 </Link>
@@ -889,21 +850,15 @@ export default function PromptManagementPage() {
 
                               {/* Subtle Region / Market Persona Pill */}
                               <div className="flex flex-wrap items-center gap-1.5">
-                                {prompt.geoMarket ? (
-                                  <span className="inline-flex items-center px-2 py-0.5 rounded-md text-[10px] font-medium bg-slate-100/90 text-slate-600 border border-slate-200/70">
-                                    {prompt.geoMarket}
-                                  </span>
-                                ) : (
-                                  <span className="inline-flex items-center px-2 py-0.5 rounded-md text-[10px] font-medium bg-slate-100/90 text-slate-600 border border-slate-200/70">
-                                    🇺🇸 US • General Activewear
-                                  </span>
-                                )}
+                                <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-medium bg-slate-100 text-slate-500">
+                                  {prompt.geoMarket || "🇺🇸 US • General Activewear"}
+                                </span>
 
                                 {hasError && (
-                                  <span className={`inline-flex items-center gap-1 text-[10px] font-semibold uppercase tracking-wider px-2 py-0.5 rounded-full border ${
+                                  <span className={`inline-flex items-center gap-1 text-[10px] font-medium px-1.5 py-0.5 rounded ${
                                     prompt.latestStatus === "failed"
-                                      ? "bg-rose-50 text-rose-700 border-rose-200"
-                                      : "bg-amber-50 text-amber-700 border-amber-200"
+                                      ? "bg-rose-50 text-rose-700"
+                                      : "bg-amber-50 text-amber-700"
                                   }`}>
                                     {prompt.latestStatus === "failed"
                                       ? "All Engines Failed"
@@ -915,38 +870,38 @@ export default function PromptManagementPage() {
                           </td>
 
                           {/* Column 2: Prompt Category */}
-                          <td className="py-3.5 px-3 text-center border-r border-b border-slate-200/80 whitespace-nowrap">
-                            <div className="flex items-center justify-center">
+                          <td className="py-3 px-3 text-left border-b border-slate-100 whitespace-nowrap">
+                            <div className="flex items-center">
                               {renderCategoryBadge(prompt.promptCategory)}
                             </div>
                           </td>
 
                           {/* Column 3: Branded / Unbranded */}
-                          <td className="py-3.5 px-3 text-center border-r border-b border-slate-200/80 whitespace-nowrap">
-                            <div className="flex items-center justify-center">
+                          <td className="py-3 px-3 text-left border-b border-slate-100 whitespace-nowrap">
+                            <div className="flex items-center">
                               {renderBrandedBadge(prompt.brandedType)}
                             </div>
                           </td>
 
                           {/* Column 4: Search Intent */}
-                          <td className="py-3.5 px-3 text-center border-r border-b border-slate-200/80 whitespace-nowrap">
-                            <div className="flex items-center justify-center">
+                          <td className="py-3 px-3 text-left border-b border-slate-100 whitespace-nowrap">
+                            <div className="flex items-center">
                               {renderSearchIntentBadge(prompt.searchIntent)}
                             </div>
                           </td>
 
                           {/* Column 5: Engines (Horizontal compact row) */}
-                          <td className="py-3.5 px-3 text-center border-r border-b border-slate-200/80 whitespace-nowrap">
-                            <div className="flex items-center justify-center gap-1.5">
+                          <td className="py-3 px-3 text-center border-b border-slate-100 whitespace-nowrap">
+                            <div className="flex items-center justify-center gap-1">
                               {prompt.targetEngines.map((engine) => {
                                 const isFailed = prompt.failedEngines?.includes(engine);
                                 return (
                                   <div key={engine} className="relative shrink-0">
-                                    <EngineBadge engine={engine} size="sm" />
+                                    <EngineBadge engine={engine} size="xs" />
                                     {isFailed && (
                                       <span
                                         title={`${engine} failed during latest run`}
-                                        className="absolute -top-1 -right-1 w-2.5 h-2.5 bg-rose-500 rounded-full border border-white ring-1 ring-rose-300"
+                                        className="absolute -top-1 -right-1 w-2 h-2 bg-rose-500 rounded-full border border-white ring-1 ring-rose-300"
                                       />
                                     )}
                                   </div>
@@ -956,44 +911,31 @@ export default function PromptManagementPage() {
                           </td>
 
                           {/* Column 6: Frequency */}
-                          <td className="py-3.5 px-3 text-center border-r border-b border-slate-200/80 whitespace-nowrap">
-                            <div className="flex items-center justify-center">
-                              <span
-                                className={`inline-flex items-center justify-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-medium border ${
-                                  prompt.frequency === "daily"
-                                    ? "bg-slate-100/80 text-slate-800 border-slate-200"
-                                    : "bg-purple-50 text-purple-700 border-purple-200/80"
-                                }`}
-                              >
-                                <Calendar className="w-3 h-3 text-slate-400" />
-                                <span className="capitalize">{prompt.frequency}</span>
+                          <td className="py-3 px-3 text-left border-b border-slate-100 whitespace-nowrap">
+                            <div className="flex items-center">
+                              <span className="inline-flex items-center px-2 py-0.5 rounded-md text-[11px] font-medium bg-slate-100/70 text-slate-600 border border-slate-200/60 capitalize">
+                                {prompt.frequency}
                               </span>
                             </div>
                           </td>
 
                           {/* Column 7: Performance / Avg Rank */}
-                          <td className="py-3.5 px-3 text-center border-r border-b border-slate-200/80 whitespace-nowrap">
-                            <div className="flex items-center justify-center">
+                          <td className="py-3 px-3 text-left border-b border-slate-100 whitespace-nowrap">
+                            <div className="flex items-center">
                               {prompt.performanceRank ? (
                                 <span
-                                  className={`inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-semibold border ${
+                                  className={`inline-flex items-center px-2 py-0.5 rounded-md text-[11px] font-medium border ${
                                     prompt.performanceRank.variant === "green"
-                                      ? "bg-emerald-50 text-emerald-700 border-emerald-200/80"
+                                      ? "bg-emerald-50/80 text-emerald-700 border-emerald-200/70"
                                       : prompt.performanceRank.variant === "blue"
-                                      ? "bg-blue-50 text-blue-700 border-blue-200/80"
-                                      : "bg-slate-100 text-slate-500 border-slate-200"
+                                      ? "bg-blue-50/80 text-blue-700 border-blue-200/70"
+                                      : "bg-slate-50 text-slate-600 border-slate-200/70"
                                   }`}
                                 >
-                                  {prompt.performanceRank.variant === "green" && (
-                                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 shrink-0" />
-                                  )}
-                                  {prompt.performanceRank.variant === "blue" && (
-                                    <span className="w-1.5 h-1.5 rounded-full bg-blue-500 shrink-0" />
-                                  )}
-                                  <span>{prompt.performanceRank.label}</span>
+                                  {prompt.performanceRank.label}
                                 </span>
                               ) : (
-                                <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-medium bg-slate-100 text-slate-500 border border-slate-200">
+                                <span className="text-[11px] text-slate-400 font-normal">
                                   Unranked
                                 </span>
                               )}
@@ -1001,28 +943,28 @@ export default function PromptManagementPage() {
                           </td>
 
                           {/* Column 8: Last Executed */}
-                          <td className="py-3.5 px-3 text-center border-r border-b border-slate-200/80 whitespace-nowrap">
-                            <div className="flex items-center justify-center gap-1.5 text-xs text-slate-500">
+                          <td className="py-3 px-3 text-left border-b border-slate-100 whitespace-nowrap">
+                            <div className="flex items-center gap-1.5 text-xs text-slate-500">
                               {isRunning || isRetrying ? (
                                 <span className="inline-flex items-center gap-1 text-indigo-600 font-medium">
                                   <Loader2 className="w-3.5 h-3.5 animate-spin" />
-                                  {isRetrying ? "Retrying failed..." : "Executing queue..."}
+                                  {isRetrying ? "Retrying..." : "Running..."}
                                 </span>
                               ) : (
                                 <>
-                                  <Clock className="w-3.5 h-3.5 text-slate-400" />
-                                  <span>{formatRelativeTime(prompt.lastExecutedAt)}</span>
+                                  <Clock className="w-3.5 h-3.5 text-slate-400 shrink-0" />
+                                  <span className="text-slate-600">{formatRelativeTime(prompt.lastExecutedAt)}</span>
                                 </>
                               )}
                             </div>
                           </td>
 
                           {/* Column 9: Actions Menu */}
-                          <td className="py-3.5 px-3 text-center border-b border-slate-200/80 whitespace-nowrap relative">
-                            <div className="flex items-center justify-center gap-1.5">
+                          <td className="py-3 px-4 text-right border-b border-slate-100 whitespace-nowrap relative">
+                            <div className="flex items-center justify-end gap-1.5">
                               <Link
                                 href={`/reports/prompts?promptId=${prompt.id}`}
-                                className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-semibold text-slate-700 hover:text-indigo-600 bg-slate-100/90 hover:bg-slate-200/80 border border-slate-200/70 transition-colors"
+                                className="inline-flex items-center gap-1 px-2.5 py-1 rounded-md text-xs font-medium text-slate-700 hover:text-slate-900 bg-slate-100 hover:bg-slate-200/70 border border-slate-200/70 transition-colors"
                               >
                                 <span>Inspect</span>
                                 <span className="text-[10px]">&rarr;</span>
@@ -1031,7 +973,7 @@ export default function PromptManagementPage() {
                                 onClick={() =>
                                   setActiveMenuId(isMenuOpen ? null : prompt.id)
                                 }
-                                className="p-1 rounded-lg text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition-colors cursor-pointer"
+                                className="p-1 rounded-md text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition-colors cursor-pointer"
                                 title="More actions"
                               >
                                 <MoreVertical className="w-4 h-4" />

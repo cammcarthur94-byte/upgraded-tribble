@@ -3,7 +3,8 @@
 import React, { useState } from "react";
 import { EngineRunResult, SupportedEngine } from "@/lib/types";
 import { EngineFavicon, Favicon } from "@/components/ui/favicon";
-import { Clock, ExternalLink, ThumbsUp, ThumbsDown, Minus, Sparkles } from "lucide-react";
+import { Clock, ExternalLink, ThumbsUp, ThumbsDown, Minus, Sparkles, ShoppingBag } from "lucide-react";
+import { findProductsInText } from "@/services/productImageResolver";
 
 interface PromptRawResponsesViewProps {
   results: EngineRunResult[];
@@ -173,6 +174,62 @@ export function PromptRawResponsesView({
                     {highlightEntities(res.rawResponseText, res.mentions)}
                   </div>
                 </div>
+
+                {/* Products detected in this AI Result */}
+                {(() => {
+                  const detectedProducts = findProductsInText(res.rawResponseText);
+                  if (detectedProducts.length === 0) return null;
+
+                  return (
+                    <div className="px-6 pb-5 pt-0">
+                      <div className="p-4 rounded-xl bg-slate-50/80 border border-slate-200/70 space-y-2.5">
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center gap-2">
+                            <ShoppingBag className="w-3.5 h-3.5 text-indigo-600" />
+                            <h5 className="text-xs font-bold text-slate-900 uppercase tracking-wider">
+                              Products Featured in this AI Answer ({detectedProducts.length})
+                            </h5>
+                          </div>
+                          <span className="text-[10px] text-slate-400 font-medium">
+                            Extracted from generative response
+                          </span>
+                        </div>
+
+                        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2.5">
+                          {detectedProducts.map((prod) => (
+                            <div
+                              key={prod.id}
+                              className="flex items-center gap-2.5 p-2 rounded-lg bg-white border border-slate-200/80 shadow-2xs group hover:border-slate-300 transition-colors"
+                            >
+                              <img
+                                src={prod.imageUrl}
+                                alt={prod.name}
+                                className="w-10 h-10 rounded-md object-cover border border-slate-100 shrink-0 bg-slate-50"
+                                loading="lazy"
+                              />
+                              <div className="min-w-0 flex-1">
+                                <span
+                                  className="font-semibold text-slate-900 text-xs block truncate group-hover:text-indigo-600 transition-colors"
+                                  title={prod.name}
+                                >
+                                  {prod.name}
+                                </span>
+                                <div className="flex items-center justify-between text-[11px] text-slate-500 mt-0.5">
+                                  <span className="font-medium text-slate-600">{prod.brand}</span>
+                                  {prod.price && (
+                                    <span className="font-mono font-bold text-emerald-700 bg-emerald-50 px-1 rounded text-[10px]">
+                                      {prod.price}
+                                    </span>
+                                  )}
+                                </div>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })()}
 
                 {/* Mentions & Citations footer grid */}
                 <div className="border-t border-slate-100 bg-slate-50/30 p-5 px-6 grid grid-cols-1 md:grid-cols-2 gap-6">

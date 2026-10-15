@@ -4,6 +4,7 @@ import React, { useState } from "react";
 import { MessageSquare, CheckCircle2, XCircle } from "lucide-react";
 import { PromptResponseHistoryItem, SupportedEngine } from "@/lib/types";
 import { EngineFavicon } from "@/components/ui/favicon";
+import { findProductsInText } from "@/services/productImageResolver";
 
 interface PromptResponseHistoryCardProps {
   responseHistory: PromptResponseHistoryItem[];
@@ -135,14 +136,37 @@ export function PromptResponseHistoryCard({
                   key={item.id}
                   className="hover:bg-slate-50/70 divide-x divide-slate-200 transition-colors"
                 >
-                  {/* AI Response with Engine Favicon */}
+                  {/* AI Response with Engine Favicon & Product Images */}
                   <td className="py-4 px-6">
-                    <div className="flex items-center gap-3">
-                      <div className="shrink-0 p-1 rounded-md bg-slate-50 border border-slate-200/60 shadow-2xs">
+                    <div className="flex items-start gap-3">
+                      <div className="shrink-0 p-1 rounded-md bg-slate-50 border border-slate-200/60 shadow-2xs mt-0.5">
                         <EngineFavicon engine={item.engineName} size={18} />
                       </div>
-                      <div className="text-xs text-slate-700 leading-relaxed max-w-3xl">
-                        {renderResponseSnippet(item)}
+                      <div className="space-y-1.5 flex-1 min-w-0">
+                        <div className="text-xs text-slate-700 leading-relaxed max-w-3xl">
+                          {renderResponseSnippet(item)}
+                        </div>
+                        {(() => {
+                          const prods = findProductsInText(item.responseText);
+                          if (prods.length === 0) return null;
+                          return (
+                            <div className="flex flex-wrap items-center gap-1.5 pt-1">
+                              {prods.map((p) => (
+                                <span
+                                  key={p.id}
+                                  className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md bg-slate-100/80 border border-slate-200 text-[11px] font-medium text-slate-800"
+                                >
+                                  <img
+                                    src={p.imageUrl}
+                                    alt={p.name}
+                                    className="w-4 h-4 rounded-xs object-cover border border-slate-200 shrink-0"
+                                  />
+                                  <span>{p.name}</span>
+                                </span>
+                              ))}
+                            </div>
+                          );
+                        })()}
                       </div>
                     </div>
                   </td>

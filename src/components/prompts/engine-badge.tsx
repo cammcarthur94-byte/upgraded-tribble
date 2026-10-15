@@ -4,7 +4,7 @@ import { EngineFavicon } from "@/components/ui/favicon";
 
 interface EngineBadgeProps {
   engine: SupportedEngine | string;
-  size?: "sm" | "md" | "lg";
+  size?: "xs" | "sm" | "md" | "lg";
   showLabel?: boolean;
 }
 
@@ -45,19 +45,21 @@ export function EngineBadge({
   };
 
   const iconSizes = {
+    xs: 14,
     sm: 18,
     md: 22,
     lg: 26,
   };
 
-  const iconSize = iconSizes[size] || 18;
+  const iconSize = iconSizes[size] || 16;
 
   if (!showLabel) {
     const boxSizeClasses = {
+      xs: "w-6 h-6 rounded-md",
       sm: "w-8 h-8 rounded-xl",
       md: "w-9 h-9 rounded-xl",
       lg: "w-10 h-10 rounded-2xl",
-    }[size] || "w-8 h-8 rounded-xl";
+    }[size] || "w-7 h-7 rounded-lg";
 
     return (
       <span

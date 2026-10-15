@@ -3,6 +3,7 @@
 import React, { useEffect } from "react";
 import { DomainIntelligenceItem, SupportedEngine } from "@/lib/types";
 import { EngineBadge } from "@/components/prompts/engine-badge";
+import { findProductsInText } from "@/services/productImageResolver";
 import { Favicon } from "@/components/ui/favicon";
 import {
   X,
@@ -207,11 +208,36 @@ export function CitationDetailsSheet({
 
                   {/* Context snippet */}
                   {instance.contextSnippet && (
-                    <div className="text-xs text-slate-600 bg-white p-3 rounded-lg border border-slate-200/80 leading-relaxed font-sans">
-                      <span className="text-slate-400 font-medium block mb-1 text-[10px] uppercase tracking-wider">
+                    <div className="text-xs text-slate-600 bg-white p-3 rounded-lg border border-slate-200/80 leading-relaxed font-sans space-y-2">
+                      <span className="text-slate-400 font-medium block text-[10px] uppercase tracking-wider">
                         Attributed Snippet
                       </span>
-                      {instance.contextSnippet}
+                      <div>{instance.contextSnippet}</div>
+                      {(() => {
+                        const detected = findProductsInText(instance.contextSnippet);
+                        if (detected.length === 0) return null;
+                        return (
+                          <div className="flex flex-wrap items-center gap-1.5 pt-1 border-t border-slate-100">
+                            {detected.map((p) => (
+                              <span
+                                key={p.id}
+                                className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md bg-slate-50 border border-slate-200 text-[11px] font-medium text-slate-800"
+                              >
+                                <img
+                                  src={p.imageUrl}
+                                  alt={p.name}
+                                  className="w-4 h-4 rounded object-cover shrink-0"
+                                  loading="lazy"
+                                  onError={(e) => {
+                                    (e.currentTarget as HTMLElement).style.display = "none";
+                                  }}
+                                />
+                                <span>{p.name}</span>
+                              </span>
+                            ))}
+                          </div>
+                        );
+                      })()}
                     </div>
                   )}
 

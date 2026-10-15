@@ -19,6 +19,7 @@ import {
 } from "lucide-react";
 import { EngineBadge } from "@/components/prompts/engine-badge";
 import { Favicon, EngineFavicon } from "@/components/ui/favicon";
+import { getProductThumbnail } from "@/services/productImageResolver";
 
 interface ProductsViewProps {
   productCards: ShoppingProductCardItem[];
@@ -115,7 +116,8 @@ export function ProductsView({
         {/* Product Tile Grid */}
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
           {displayedCards.map((card) => {
-            const hasValidImage = card.imageUrl && !imageErrors[card.id];
+            const cardImgUrl = card.imageUrl || getProductThumbnail(card.productName);
+            const hasValidImage = cardImgUrl && !imageErrors[card.id];
 
             return (
               <div
@@ -131,7 +133,7 @@ export function ProductsView({
                   <div className="w-full h-32 rounded-lg mb-2 bg-slate-50 border border-slate-200/60 relative overflow-hidden flex items-center justify-center">
                     {hasValidImage ? (
                       <img
-                        src={card.imageUrl}
+                        src={cardImgUrl}
                         alt={card.productName}
                         onError={() => handleImageError(card.id)}
                         className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
@@ -333,15 +335,26 @@ export function ProductsView({
             {/* Modal Header */}
             <div className="flex items-center justify-between p-5 border-b border-slate-100 bg-slate-50/60">
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-xl bg-white border border-slate-200 flex items-center justify-center text-indigo-600 shadow-2xs">
-                  <MessageSquare className="w-5 h-5" />
-                </div>
+                {(() => {
+                  const modalImg = selectedCardForPrompts.imageUrl || getProductThumbnail(selectedCardForPrompts.productName);
+                  return modalImg ? (
+                    <img
+                      src={modalImg}
+                      alt={selectedCardForPrompts.productName}
+                      className="w-12 h-12 rounded-xl object-cover border border-slate-200 bg-white shadow-2xs shrink-0"
+                    />
+                  ) : (
+                    <div className="w-12 h-12 rounded-xl bg-white border border-slate-200 flex items-center justify-center text-indigo-600 shadow-2xs shrink-0">
+                      <ShoppingBag className="w-6 h-6 text-slate-400" />
+                    </div>
+                  );
+                })()}
                 <div>
                   <h3 className="text-sm font-bold text-slate-900 leading-tight">
-                    Prompts Featuring Product
+                    {selectedCardForPrompts.productName}
                   </h3>
                   <p className="text-xs text-slate-500 mt-0.5">
-                    "{selectedCardForPrompts.productName}" ({selectedCardForPrompts.brandName})
+                    {selectedCardForPrompts.brandName} · Prompts Featuring Product
                   </p>
                 </div>
               </div>

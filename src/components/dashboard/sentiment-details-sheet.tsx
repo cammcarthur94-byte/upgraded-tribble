@@ -16,6 +16,7 @@ import {
   ArrowRight,
 } from "lucide-react";
 import { useInspector } from "@/context/inspector-context";
+import { findProductsInText } from "@/services/productImageResolver";
 
 interface SentimentDetailsSheetProps {
   isOpen: boolean;
@@ -248,6 +249,33 @@ export function SentimentDetailsSheet({
                       </span>
                       {item.snippet}
                     </div>
+
+                    {/* Featured Products Mentioned */}
+                    {(() => {
+                      const detectedProducts = findProductsInText(item.snippet);
+                      if (detectedProducts.length === 0) return null;
+                      return (
+                        <div className="flex flex-wrap items-center gap-1.5 pt-0.5">
+                          {detectedProducts.map((p) => (
+                            <span
+                              key={p.id}
+                              className="inline-flex items-center gap-1.5 px-2 py-1 rounded-md bg-white border border-slate-200 text-[11px] font-medium text-slate-800 shadow-2xs"
+                            >
+                              <img
+                                src={p.imageUrl}
+                                alt={p.name}
+                                className="w-4 h-4 rounded object-cover shrink-0"
+                                loading="lazy"
+                                onError={(e) => {
+                                  (e.currentTarget as HTMLElement).style.display = "none";
+                                }}
+                              />
+                              <span>{p.name}</span>
+                            </span>
+                          ))}
+                        </div>
+                      );
+                    })()}
 
                     {/* Reasoning Footnote */}
                     {item.reasoning && (

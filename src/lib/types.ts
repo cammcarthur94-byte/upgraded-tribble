@@ -576,6 +576,7 @@ export interface ProductShelfItem {
   sentiment: SentimentType;
   rawContexts: ProductContextQuote[];
   prompts?: ShoppingProductPromptRef[];
+  imageUrl?: string;
 }
 
 export interface BrandShelfShare {
